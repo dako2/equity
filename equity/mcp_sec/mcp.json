@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sec-edgar": {
+      "command": "python",
+      "args": ["-m", "mcp_sec.server", "--mcp"],
+      "cwd": "/Users/dako22/codes/equity"
+    }
+  }
+}

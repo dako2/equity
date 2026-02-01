@@ -1,0 +1,42 @@
+# Equity Research Deep Research Agent
+# Core dependencies
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+
+# xAI SDK (OpenAI-compatible)
+openai==1.12.0
+
+# Data & Analysis
+yfinance==0.2.36
+pandas==2.2.0
+numpy==1.26.3
+
+# PDF Report Generation
+reportlab==4.1.0
+svglib==1.5.1
+matplotlib==3.8.2
+Pillow==10.2.0
+
+# PDF Rendering for Visual Feedback Loop
+PyMuPDF==1.23.8
+
+# Image analysis for layout comparison (optional)
+scikit-image==0.22.0
+opencv-python==4.9.0.80
+
+# Web scraping for research
+httpx==0.26.0
+beautifulsoup4==4.12.3
+
+# Async support
+aiohttp==3.9.3
+
+# MCP (Model Context Protocol)
+mcp>=1.0.0
+
+# LLM clients
+anthropic>=0.18.0
+
+# Environment
+python-dotenv==1.0.1

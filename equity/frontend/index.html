@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equity Research Report Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-panel: #161b22;
+            --bg-card: #21262d;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --highlight: #ffd700;
+            --success: #3fb950;
+            --warning: #d29922;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app {
+            display: grid;
+            grid-template-columns: 350px 1fr 380px;
+            height: 100vh;
+        }
+        
+        /* Left Panel - Content Editor */
+        .editor-panel {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .panel-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        
+        .section-header:hover {
+            background: #2d333b;
+        }
+        
+        .section-header h3 {
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 12px;
+        }
+        
+        .field {
+            margin-bottom: 12px;
+        }
+        
+        .field:last-child {
+            margin-bottom: 0;
+        }
+        
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .field input, .field textarea, .field select {
+            width: 100%;
+            padding: 8px 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+        
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .field textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .placeholder-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: var(--bg-dark);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .placeholder-item.highlighted {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid var(--highlight);
+        }
+        
+        .placeholder-item input {
+            flex: 1;
+        }
+        
+        .placeholder-item button {
+            padding: 4px 8px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .placeholder-item button:hover {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+        
+        .placeholder-item button.delete:hover {
+            background: rgba(248, 81, 73, 0.2);
+            border-color: #f85149;
+            color: #f85149;
+        }
+        
+        .add-btn {
+            width: 100%;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .add-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        /* Center - PDF Preview */
+        .preview-panel {
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .preview-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .preview-toolbar .page-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .preview-toolbar button {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .preview-toolbar button:hover:not(:disabled) {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .preview-toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .preview-toolbar .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .preview-container {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .pdf-canvas-container {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        #pdf-canvas {
+            display: block;
+        }
+        
+        .highlight-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .highlight-box {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid var(--highlight);
+            border-radius: 4px;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .highlight-box:hover {
+            background: rgba(255, 215, 0, 0.5);
+        }
+        
+        .highlight-box.selected {
+            background: rgba(88, 166, 255, 0.3);
+            border-color: var(--accent);
+        }
+        
+        /* Right Panel - Properties */
+        .properties-panel {
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .property-group {
+            margin-bottom: 20px;
+        }
+        
+        .property-group h4 {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .layout-grid .field {
+            margin-bottom: 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn-primary {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #79b8ff;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-card);
+        }
+        
+        /* Status indicator */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 20px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-dot.connected {
+            background: var(--success);
+        }
+        
+        .status-dot.loading {
+            background: var(--warning);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Loading state */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 17, 23, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Left Panel - Content Editor -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <h2>Report Content</h2>
+            </div>
+            
+            <!-- Company Info Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📊 Company Info</h3>
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="field">
+                        <label>Company Name</label>
+                        <input type="text" id="company_name" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Ticker</label>
+                        <input type="text" id="ticker" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Rating</label>
+                        <select id="rating" onchange="scheduleRender()">
+                            <option value="Overweight">Overweight</option>
+                            <option value="Neutral">Neutral</option>
+                            <option value="Underweight">Underweight</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Price Target</label>
+                        <input type="number" id="price_target" placeholder="0.00" step="0.01" oninput="scheduleRender()">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Points Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🎯 Key Investment Points</h3>
+                    <span>▼</span>
+                </div>
+                <div class="section-content" id="key-points-container">
+                    <div class="placeholder-item" data-id="bullet_1">
+                        <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        <button onclick="highlightOnPdf(this)" title="Highlight on PDF">📍</button>
+                        <button class="delete" onclick="deleteItem(this)" title="Delete">✕</button>
+                    </div>
+                    <div class="placeholder-item" data-id="bullet_2">
+                        <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        <button onclick="highlightOnPdf(this)" title="Highlight on PDF">📍</button>
+                        <button class="delete" onclick="deleteItem(this)" title="Delete">✕</button>
+                    </div>
+                    <div class="placeholder-item" data-id="bullet_3">
+                        <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        <button onclick="highlightOnPdf(this)" title="Highlight on PDF">📍</button>
+                        <button class="delete" onclick="deleteItem(this)" title="Delete">✕</button>
+                    </div>
+                    <button class="add-btn" onclick="addBulletPoint('key-points-container')">+ Add Point</button>
+                </div>
+            </div>
+            
+            <!-- Executive Summary -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📝 Executive Summary</h3>
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="field">
+                        <label>Paragraph 1</label>
+                        <textarea placeholder="[PLACEHOLDER] [PLACEHOLDER] [PLACEHOLDER]..." oninput="scheduleRender()"></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Paragraph 2</label>
+                        <textarea placeholder="[PLACEHOLDER] [PLACEHOLDER] [PLACEHOLDER]..." oninput="scheduleRender()"></textarea>
+                    </div>
+                    <button class="add-btn" onclick="addParagraph(this)">+ Add Paragraph</button>
+                </div>
+            </div>
+            
+            <!-- Financial Data -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>💰 Financial Projections</h3>
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="layout-grid">
+                        <div class="field">
+                            <label>Revenue 2024</label>
+                            <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        </div>
+                        <div class="field">
+                            <label>Revenue 2025E</label>
+                            <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        </div>
+                        <div class="field">
+                            <label>EPS 2024</label>
+                            <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        </div>
+                        <div class="field">
+                            <label>EPS 2025E</label>
+                            <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center - PDF Preview -->
+        <div class="preview-panel">
+            <div class="preview-toolbar">
+                <div class="page-nav">
+                    <button onclick="prevPage()" id="prev-btn" disabled>← Prev</button>
+                    <span id="page-info">Page 1 of 6</span>
+                    <button onclick="nextPage()" id="next-btn">Next →</button>
+                </div>
+                <div class="zoom-controls">
+                    <button onclick="zoomOut()">−</button>
+                    <span id="zoom-level">100%</span>
+                    <button onclick="zoomIn()">+</button>
+                    <button onclick="fitToWidth()">Fit</button>
+                </div>
+            </div>
+            <div class="preview-container" id="preview-container">
+                <div class="pdf-canvas-container">
+                    <canvas id="pdf-canvas"></canvas>
+                    <div class="highlight-overlay" id="highlight-overlay"></div>
+                </div>
+                <div class="loading-overlay" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Properties -->
+        <div class="properties-panel">
+            <div class="panel-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
+                </svg>
+                <h2>Layout Settings</h2>
+            </div>
+            
+            <div class="property-group">
+                <h4>Page Margins (pt)</h4>
+                <div class="layout-grid">
+                    <div class="field">
+                        <label>Left</label>
+                        <input type="number" id="margin_left" value="54" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Right</label>
+                        <input type="number" id="margin_right" value="43" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Top</label>
+                        <input type="number" id="margin_top" value="63" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Bottom</label>
+                        <input type="number" id="margin_bottom" value="54" oninput="scheduleRender()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="property-group">
+                <h4>Typography</h4>
+                <div class="layout-grid">
+                    <div class="field">
+                        <label>H1 Size</label>
+                        <input type="number" id="h1_size" value="17" oninput="scheduleRender()">
+                    </div>
+                    <div class="field">
+                        <label>Body Size</label>
+                        <input type="number" id="body_size" value="9.5" step="0.5" oninput="scheduleRender()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="property-group">
+                <h4>Summary Page</h4>
+                <div class="field">
+                    <label>Sidebar Width (pt)</label>
+                    <input type="number" id="sidebar_width" value="162" oninput="scheduleRender()">
+                </div>
+                <div class="field">
+                    <label>Gutter Width (pt)</label>
+                    <input type="number" id="gutter_width" value="14" oninput="scheduleRender()">
+                </div>
+            </div>
+            
+            <div class="property-group">
+                <h4>Placeholder Settings</h4>
+                <div class="field">
+                    <label>Key Points Count</label>
+                    <input type="range" id="key_points_count" min="2" max="8" value="4" 
+                           oninput="updatePlaceholderCount(this)">
+                    <span id="key_points_value">4</span>
+                </div>
+                <div class="field">
+                    <label>Summary Paragraphs</label>
+                    <input type="range" id="summary_para_count" min="1" max="6" value="3"
+                           oninput="updatePlaceholderCount(this)">
+                    <span id="summary_para_value">3</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="regeneratePdf()">
+                    🔄 Regenerate PDF
+                </button>
+                <button class="btn-secondary" onclick="downloadPdf()">
+                    📥 Download PDF
+                </button>
+                <button class="btn-secondary" onclick="resetToDefaults()">
+                    ↩️ Reset to Defaults
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <div style="display: flex; align-items: center;">
+            <span class="status-dot connected" id="status-dot"></span>
+            <span id="status-text">Connected to backend</span>
+        </div>
+        <span id="last-update">Last update: --</span>
+    </div>
+
+    <script>
+        // PDF.js setup
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // State
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 6;
+        let scale = 1.0;
+        let renderTimeout = null;
+        let selectedPlaceholder = null;
+        
+        // API base URL
+        const API_BASE = window.location.origin;
+        
+        // Initialize
+        async function init() {
+            await loadPdf();
+        }
+        
+        // Load PDF from backend
+        async function loadPdf() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/preview-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(getFormData())
+                });
+                
+                if (!response.ok) throw new Error('Failed to generate PDF');
+                
+                const blob = await response.blob();
+                const arrayBuffer = await blob.arrayBuffer();
+                
+                pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                totalPages = pdfDoc.numPages;
+                
+                updatePageInfo();
+                await renderPage();
+                updateStatus('PDF rendered successfully');
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                updateStatus('Error: ' + error.message, true);
+                // Load placeholder on error
+                await loadPlaceholderPdf();
+            }
+            showLoading(false);
+        }
+        
+        // Load placeholder PDF for demo
+        async function loadPlaceholderPdf() {
+            try {
+                const response = await fetch(`${API_BASE}/api/demo-pdf`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const arrayBuffer = await blob.arrayBuffer();
+                    pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    totalPages = pdfDoc.numPages;
+                    updatePageInfo();
+                    await renderPage();
+                }
+            } catch (e) {
+                console.log('Demo PDF not available');
+            }
+        }
+        
+        // Render current page
+        async function renderPage() {
+            if (!pdfDoc) return;
+            
+            const page = await pdfDoc.getPage(currentPage);
+            const canvas = document.getElementById('pdf-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const viewport = page.getViewport({ scale: scale });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            
+            await page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            }).promise;
+            
+            // Update container size
+            const container = canvas.parentElement;
+            container.style.width = viewport.width + 'px';
+            container.style.height = viewport.height + 'px';
+        }
+        
+        // Page navigation
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePageInfo();
+                renderPage();
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePageInfo();
+                renderPage();
+            }
+        }
+        
+        function updatePageInfo() {
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-btn').disabled = currentPage <= 1;
+            document.getElementById('next-btn').disabled = currentPage >= totalPages;
+        }
+        
+        // Zoom controls
+        function zoomIn() {
+            scale = Math.min(scale + 0.25, 3.0);
+            updateZoomLevel();
+            renderPage();
+        }
+        
+        function zoomOut() {
+            scale = Math.max(scale - 0.25, 0.5);
+            updateZoomLevel();
+            renderPage();
+        }
+        
+        function fitToWidth() {
+            const container = document.getElementById('preview-container');
+            if (pdfDoc) {
+                pdfDoc.getPage(currentPage).then(page => {
+                    const viewport = page.getViewport({ scale: 1.0 });
+                    scale = (container.clientWidth - 40) / viewport.width;
+                    updateZoomLevel();
+                    renderPage();
+                });
+            }
+        }
+        
+        function updateZoomLevel() {
+            document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+        }
+        
+        // Form data collection
+        function getFormData() {
+            return {
+                company_name: document.getElementById('company_name')?.value || '[PLACEHOLDER]',
+                ticker: document.getElementById('ticker')?.value || '[PLACEHOLDER]',
+                rating: document.getElementById('rating')?.value || 'Overweight',
+                price_target: parseFloat(document.getElementById('price_target')?.value) || 0,
+                layout: {
+                    margin_left: parseFloat(document.getElementById('margin_left')?.value) || 54,
+                    margin_right: parseFloat(document.getElementById('margin_right')?.value) || 43,
+                    margin_top: parseFloat(document.getElementById('margin_top')?.value) || 63,
+                    margin_bottom: parseFloat(document.getElementById('margin_bottom')?.value) || 54,
+                    sidebar_width: parseFloat(document.getElementById('sidebar_width')?.value) || 162,
+                    h1_font_size: parseFloat(document.getElementById('h1_size')?.value) || 17,
+                    body_font_size: parseFloat(document.getElementById('body_size')?.value) || 9.5,
+                },
+                placeholders: {
+                    key_points: parseInt(document.getElementById('key_points_count')?.value) || 4,
+                    summary_body: parseInt(document.getElementById('summary_para_count')?.value) || 3,
+                }
+            };
+        }
+        
+        // Schedule render with debounce
+        function scheduleRender() {
+            if (renderTimeout) clearTimeout(renderTimeout);
+            renderTimeout = setTimeout(() => {
+                regeneratePdf();
+            }, 500);
+        }
+        
+        // Regenerate PDF
+        async function regeneratePdf() {
+            await loadPdf();
+            document.getElementById('last-update').textContent = 
+                'Last update: ' + new Date().toLocaleTimeString();
+        }
+        
+        // Download PDF
+        async function downloadPdf() {
+            try {
+                const response = await fetch(`${API_BASE}/api/generate-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(getFormData())
+                });
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'equity_research_report.pdf';
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error downloading PDF: ' + error.message);
+            }
+        }
+        
+        // UI Interactions
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('span');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                arrow.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                arrow.textContent = '▶';
+            }
+        }
+        
+        function addBulletPoint(containerId) {
+            const container = document.getElementById(containerId);
+            const addBtn = container.querySelector('.add-btn');
+            const count = container.querySelectorAll('.placeholder-item').length + 1;
+            
+            const item = document.createElement('div');
+            item.className = 'placeholder-item';
+            item.dataset.id = 'bullet_' + count;
+            item.innerHTML = `
+                <input type="text" placeholder="[PLACEHOLDER]" oninput="scheduleRender()">
+                <button onclick="highlightOnPdf(this)" title="Highlight on PDF">📍</button>
+                <button class="delete" onclick="deleteItem(this)" title="Delete">✕</button>
+            `;
+            
+            container.insertBefore(item, addBtn);
+            scheduleRender();
+        }
+        
+        function addParagraph(btn) {
+            const container = btn.parentElement;
+            const count = container.querySelectorAll('.field').length + 1;
+            
+            const field = document.createElement('div');
+            field.className = 'field';
+            field.innerHTML = `
+                <label>Paragraph ${count}</label>
+                <textarea placeholder="[PLACEHOLDER] [PLACEHOLDER] [PLACEHOLDER]..." oninput="scheduleRender()"></textarea>
+            `;
+            
+            container.insertBefore(field, btn);
+            scheduleRender();
+        }
+        
+        function deleteItem(btn) {
+            const item = btn.closest('.placeholder-item');
+            item.remove();
+            scheduleRender();
+        }
+        
+        function highlightOnPdf(btn) {
+            const item = btn.closest('.placeholder-item');
+            const allItems = document.querySelectorAll('.placeholder-item');
+            
+            allItems.forEach(i => i.classList.remove('highlighted'));
+            item.classList.add('highlighted');
+            
+            // In a full implementation, this would highlight the corresponding
+            // area on the PDF canvas based on text position
+            updateStatus('Highlighting: ' + item.dataset.id);
+        }
+        
+        function updatePlaceholderCount(slider) {
+            const id = slider.id;
+            const value = slider.value;
+            document.getElementById(id.replace('_count', '_value')).textContent = value;
+            scheduleRender();
+        }
+        
+        function resetToDefaults() {
+            document.getElementById('margin_left').value = 54;
+            document.getElementById('margin_right').value = 43;
+            document.getElementById('margin_top').value = 63;
+            document.getElementById('margin_bottom').value = 54;
+            document.getElementById('sidebar_width').value = 162;
+            document.getElementById('gutter_width').value = 14;
+            document.getElementById('h1_size').value = 17;
+            document.getElementById('body_size').value = 9.5;
+            document.getElementById('key_points_count').value = 4;
+            document.getElementById('key_points_value').textContent = 4;
+            document.getElementById('summary_para_count').value = 3;
+            document.getElementById('summary_para_value').textContent = 3;
+            scheduleRender();
+        }
+        
+        // Status updates
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('status-dot').className = 'status-dot ' + (show ? 'loading' : 'connected');
+        }
+        
+        function updateStatus(message, isError = false) {
+            document.getElementById('status-text').textContent = message;
+            document.getElementById('status-text').style.color = isError ? '#f85149' : 'inherit';
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+

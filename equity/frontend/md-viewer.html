@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equity Research Report - Markdown Editor</title>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- html2pdf.js for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            /* PDF Layout Dimensions (in px, scaled for viewing) */
+            --page-width: 612px;
+            --page-height: 792px;
+            
+            /* Margins matching LayoutParams defaults (scaled) */
+            --margin-left: 54px;
+            --margin-right: 43px;
+            --margin-top: 54px;
+            --margin-bottom: 54px;
+            
+            /* Content area */
+            --content-width: calc(var(--page-width) - var(--margin-left) - var(--margin-right));
+            
+            /* Two-column layout */
+            --sidebar-width: 162px;
+            --gutter-width: 14px;
+            --main-width: calc(var(--content-width) - var(--sidebar-width) - var(--gutter-width));
+            
+            /* Colors */
+            --primary-blue: #003366;
+            --accent-gold: #c9a227;
+            --text-dark: #1a1a1a;
+            --text-muted: #555555;
+            --border-light: #d0d6dc;
+            --bg-header: #e8edf2;
+            --bg-highlight: #fffacd;
+            --editor-bg: #1e293b;
+            --editor-text: #e2e8f0;
+            
+            /* Typography matching PDF (at 1:1 scale) */
+            --h1-size: 17px;
+            --h2-size: 11px;
+            --body-size: 9.5px;
+            --small-size: 7.6px;
+            --tiny-size: 6.8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f172a;
+        }
+
+        /* Main Layout - Side by Side */
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+        }
+
+        /* Left Panel - Editor */
+        .editor-panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--editor-bg);
+            border-right: 1px solid #334155;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        .editor-header h1 {
+            font-size: 14px;
+            color: var(--editor-text);
+            font-weight: 600;
+        }
+
+        .editor-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editor-header .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-gold);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px 16px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            flex-wrap: wrap;
+        }
+
+        .toolbar button {
+            padding: 6px 10px;
+            background: #334155;
+            border: none;
+            border-radius: 4px;
+            color: #94a3b8;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .toolbar button:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .toolbar button.active {
+            background: var(--accent-gold);
+            color: #1e293b;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            background: #334155;
+            margin: 0 8px;
+        }
+
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #markdown-input {
+            flex: 1;
+            width: 100%;
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: var(--editor-bg);
+            color: var(--editor-text);
+            border: none;
+            resize: none;
+            outline: none;
+        }
+
+        #markdown-input::placeholder {
+            color: #64748b;
+        }
+
+        .editor-footer {
+            padding: 8px 16px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Right Panel - Preview */
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            background: #64748b;
+            overflow: hidden;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #475569;
+            border-bottom: 1px solid #334155;
+        }
+
+        .preview-header h2 {
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .scale-control {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .scale-control button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #334155;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .scale-control button:hover {
+            background: #475569;
+        }
+
+        .scale-control span {
+            min-width: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .export-btn, .print-btn {
+            padding: 6px 12px;
+            background: var(--accent-gold);
+            border: none;
+            border-radius: 4px;
+            color: #1e293b;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .export-btn:hover, .print-btn:hover {
+            background: #d4af37;
+            transform: translateY(-1px);
+        }
+
+        .print-btn {
+            background: #334155;
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: #475569;
+        }
+
+        .feedback-btn {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .feedback-btn:hover {
+            background: #6d28d9;
+        }
+
+        /* Design Agent Panel */
+        .design-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            color: white;
+            font-size: 12px;
+        }
+
+        .design-panel.open {
+            display: flex;
+        }
+
+        .design-panel-header {
+            padding: 16px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .design-panel-header h3 {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .design-panel-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .design-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .design-section {
+            margin-bottom: 20px;
+        }
+
+        .design-section h4 {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .css-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .css-control label {
+            flex: 1;
+            color: #cbd5e1;
+            font-size: 11px;
+        }
+
+        .css-control input[type="range"] {
+            width: 80px;
+            accent-color: var(--accent-gold);
+        }
+
+        .css-control .value {
+            width: 40px;
+            text-align: right;
+            color: var(--accent-gold);
+            font-family: monospace;
+        }
+
+        .feedback-box {
+            background: #334155;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .feedback-box .score {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .feedback-box .score-label {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .issue-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .issue-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #475569;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .issue-list li:last-child {
+            border-bottom: none;
+        }
+
+        .issue-icon {
+            color: #fbbf24;
+        }
+
+        .suggestion-list li {
+            color: #86efac;
+        }
+
+        .suggestion-list .issue-icon {
+            color: #86efac;
+        }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 10px;
+            background: #7c3aed;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .btn-analyze:hover {
+            background: #6d28d9;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 8px;
+            background: #475569;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Export loading overlay */
+        .export-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .export-modal {
+            background: white;
+            padding: 32px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .export-modal h3 {
+            margin-bottom: 16px;
+            color: var(--primary-blue);
+        }
+
+        .export-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .preview-scroll {
+            flex: 1;
+            overflow: auto;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .preview-container {
+            transform-origin: top center;
+        }
+
+        /* PDF Page Container */
+        .report-page {
+            width: var(--page-width);
+            min-height: var(--page-height);
+            background: white;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        /* Header Band */
+        .page-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            padding: 10px var(--margin-right) 10px var(--margin-left);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .page-header .region {
+            font-size: 7px;
+            color: var(--text-muted);
+            background: var(--bg-highlight);
+            padding: 2px 5px;
+        }
+
+        .page-header .date {
+            font-size: 7px;
+            color: var(--text-muted);
+            background: var(--bg-highlight);
+            padding: 2px 5px;
+        }
+
+        /* Analyst Info */
+        .analyst-info {
+            position: absolute;
+            top: 44px;
+            left: var(--margin-left);
+            font-size: 6px;
+            line-height: 1.4;
+            background: var(--bg-highlight);
+            padding: 3px 6px;
+        }
+
+        /* Footer Band */
+        .page-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 35px;
+            padding: 6px var(--margin-right) 6px var(--margin-left);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .page-footer .page-num {
+            font-size: 6px;
+            color: var(--text-muted);
+        }
+
+        /* Main Content Area */
+        .page-content {
+            position: absolute;
+            top: 75px;
+            left: var(--margin-left);
+            right: var(--margin-right);
+            bottom: 40px;
+            overflow: hidden;
+        }
+
+        /* Two Column Layout */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: var(--main-width) var(--sidebar-width);
+            gap: var(--gutter-width);
+            height: 100%;
+        }
+
+        .main-column {
+            overflow: hidden;
+        }
+
+        .sidebar-column {
+            border: 1px solid var(--border-light);
+            padding: 6px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        /* Single Column Layout */
+        .single-column-layout {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Typography */
+        .report-content h1 {
+            font-size: var(--h1-size);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .report-content h2 {
+            font-size: var(--h2-size);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-top: 10px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .report-content h3 {
+            font-size: var(--body-size);
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-top: 8px;
+            margin-bottom: 3px;
+        }
+
+        .report-content p {
+            font-size: var(--body-size);
+            line-height: 1.45;
+            margin-bottom: 6px;
+            text-align: justify;
+        }
+
+        .report-content ul, .report-content ol {
+            font-size: var(--body-size);
+            margin-left: 14px;
+            margin-bottom: 8px;
+            line-height: 1.45;
+        }
+
+        .report-content li {
+            margin-bottom: 2px;
+        }
+
+        /* Tables */
+        .report-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: var(--small-size);
+        }
+
+        .report-content thead {
+            background: var(--bg-header);
+        }
+
+        .report-content th {
+            font-weight: 600;
+            text-align: left;
+            padding: 3px 5px;
+            border: 0.5px solid var(--border-light);
+            font-size: var(--small-size);
+        }
+
+        .report-content td {
+            padding: 2px 5px;
+            border: 0.5px solid var(--border-light);
+            font-size: var(--small-size);
+        }
+
+        .report-content tbody tr:nth-child(odd) {
+            background: var(--bg-highlight);
+        }
+
+        .report-content td:nth-child(n+2) {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Blockquotes */
+        .report-content blockquote {
+            background: var(--bg-highlight);
+            padding: 6px 8px;
+            margin: 8px 0;
+            font-style: italic;
+            font-size: var(--body-size);
+            border-left: 2px solid var(--accent-gold);
+        }
+
+        .report-content blockquote p {
+            margin: 0;
+        }
+
+        /* Code */
+        .report-content code {
+            background: var(--bg-header);
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-family: 'Courier New', monospace;
+            font-size: var(--small-size);
+        }
+
+        .report-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 8px;
+            border-radius: 3px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: var(--small-size);
+        }
+
+        .report-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .report-content hr {
+            border: none;
+            border-top: 1px solid var(--border-light);
+            margin: 12px 0;
+        }
+
+        /* Rating badges */
+        .rating-overweight {
+            display: inline-block;
+            background: #059669;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 2px;
+            font-size: var(--small-size);
+            font-weight: 600;
+        }
+
+        .rating-neutral {
+            display: inline-block;
+            background: #6b7280;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 2px;
+            font-size: var(--small-size);
+            font-weight: 600;
+        }
+
+        .rating-underweight {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 2px;
+            font-size: var(--small-size);
+            font-weight: 600;
+        }
+
+        /* Sidebar styles */
+        .sidebar-column h2 {
+            font-size: var(--body-size);
+            margin-top: 6px;
+        }
+
+        .sidebar-column h3 {
+            font-size: var(--small-size);
+        }
+
+        .sidebar-column p {
+            font-size: var(--small-size);
+        }
+
+        .sidebar-column table {
+            font-size: var(--tiny-size);
+        }
+
+        .sidebar-column th, .sidebar-column td {
+            font-size: var(--tiny-size);
+            padding: 2px 3px;
+        }
+
+        /* Layout type indicator */
+        .layout-tabs {
+            display: flex;
+            gap: 2px;
+            background: #1e293b;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .layout-tabs button {
+            padding: 4px 8px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .layout-tabs button.active {
+            background: #334155;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid #334155;
+            }
+        }
+
+        /* Print */
+        @media print {
+            .editor-panel {
+                display: none;
+            }
+            .preview-panel {
+                width: 100%;
+            }
+            .preview-header {
+                display: none;
+            }
+            .report-page {
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Panel - Editor -->
+        <div class="editor-panel">
+            <div class="editor-header">
+                <div class="logo">
+                    <div class="logo-icon">📊</div>
+                    <h1>Equity Research Editor</h1>
+                </div>
+                <div class="layout-tabs">
+                    <button class="active" onclick="setLayout('summary')">Two-Column</button>
+                    <button onclick="setLayout('body')">Single</button>
+                </div>
+            </div>
+            
+            <div class="toolbar">
+                <button onclick="insertTemplate('summary')">📊 Summary</button>
+                <button onclick="insertTemplate('financial')">💰 Financial</button>
+                <button onclick="insertTemplate('risks')">⚠️ Risks</button>
+                <div class="toolbar-divider"></div>
+                <button onclick="insertText('## ')">H2</button>
+                <button onclick="insertText('### ')">H3</button>
+                <button onclick="insertText('**', '**')">Bold</button>
+                <button onclick="insertText('> ')">Quote</button>
+                <button onclick="insertText('- ')">List</button>
+                <button onclick="insertTable()">Table</button>
+                <div class="toolbar-divider"></div>
+                <button onclick="insertSidebar()">+ Sidebar</button>
+            </div>
+            
+            <div class="editor-area">
+                <textarea id="markdown-input" placeholder="# Company Name (TICKER)
+
+## Investment Summary
+
+**Rating:** Overweight | **Price Target:** $150
+
+Start typing your equity research report...
+
+Use ---SIDEBAR--- and ---ENDSIDEBAR--- for sidebar content.
+"></textarea>
+            </div>
+            
+            <div class="editor-footer">
+                <div class="sync-indicator">
+                    <div class="sync-dot"></div>
+                    <span>Live Preview</span>
+                </div>
+                <span>Press Ctrl+Enter to refresh | Page: 8.5" × 11"</span>
+            </div>
+        </div>
+
+        <!-- Design Agent Panel (slide-in) -->
+        <div class="design-panel" id="design-panel">
+            <div class="design-panel-header">
+                <h3>🎨 Design Agent</h3>
+                <button class="design-panel-close" onclick="hideDesignPanel()">×</button>
+            </div>
+            <div class="design-panel-content">
+                <!-- Score Display -->
+                <div class="feedback-box">
+                    <div class="score" id="design-score">--</div>
+                    <div class="score-label">Layout Score</div>
+                </div>
+
+                <!-- CSS Controls -->
+                <div class="design-section">
+                    <h4>📐 Margins</h4>
+                    <div class="css-control">
+                        <label>Left</label>
+                        <input type="range" min="36" max="90" value="54" onchange="updateCSS('margin-left', this.value)">
+                        <span class="value" id="val-margin-left">54</span>
+                    </div>
+                    <div class="css-control">
+                        <label>Right</label>
+                        <input type="range" min="36" max="90" value="43" onchange="updateCSS('margin-right', this.value)">
+                        <span class="value" id="val-margin-right">43</span>
+                    </div>
+                </div>
+
+                <div class="design-section">
+                    <h4>📝 Typography</h4>
+                    <div class="css-control">
+                        <label>H1 Size</label>
+                        <input type="range" min="14" max="24" value="17" onchange="updateCSS('h1-size', this.value)">
+                        <span class="value" id="val-h1-size">17</span>
+                    </div>
+                    <div class="css-control">
+                        <label>Body Size</label>
+                        <input type="range" min="8" max="12" value="9.5" step="0.5" onchange="updateCSS('body-size', this.value)">
+                        <span class="value" id="val-body-size">9.5</span>
+                    </div>
+                </div>
+
+                <div class="design-section">
+                    <h4>📊 Layout</h4>
+                    <div class="css-control">
+                        <label>Sidebar Width</label>
+                        <input type="range" min="120" max="200" value="162" onchange="updateCSS('sidebar-width', this.value)">
+                        <span class="value" id="val-sidebar-width">162</span>
+                    </div>
+                    <div class="css-control">
+                        <label>Gutter</label>
+                        <input type="range" min="8" max="24" value="14" onchange="updateCSS('gutter-width', this.value)">
+                        <span class="value" id="val-gutter-width">14</span>
+                    </div>
+                </div>
+
+                <!-- Issues & Suggestions -->
+                <div class="design-section" id="feedback-section" style="display:none;">
+                    <h4>⚠️ Issues</h4>
+                    <ul class="issue-list" id="issue-list"></ul>
+                    
+                    <h4 style="margin-top:16px;">💡 Suggestions</h4>
+                    <ul class="issue-list suggestion-list" id="suggestion-list"></ul>
+                </div>
+
+                <button class="btn-analyze" onclick="analyzeLayout()">
+                    🔍 Analyze Layout
+                </button>
+                <button class="btn-reset" onclick="resetCSS()">
+                    ↺ Reset to Defaults
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Preview -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h2>📄 Preview</h2>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="scale-control">
+                        <button onclick="changeScale(-0.1)">−</button>
+                        <span id="scale-display">100%</span>
+                        <button onclick="changeScale(0.1)">+</button>
+                    </div>
+                    <button onclick="exportToPDF()" class="export-btn">📥 Export PDF</button>
+                    <button onclick="window.print()" class="print-btn">🖨️ Print</button>
+                    <button onclick="showDesignPanel()" class="feedback-btn">🎨 Design Agent</button>
+                </div>
+            </div>
+            
+            <div class="preview-scroll">
+                <div class="preview-container" id="preview-container">
+                    <div id="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScale = 1;
+        let currentLayout = 'summary';
+        let debounceTimer;
+
+        // Configure marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        const templates = {
+            summary: `# Hulu Inc. (HULU)
+## Streaming Pioneer Poised for Growth
+
+**Rating:** Overweight | **Price Target:** $185
+
+We initiate coverage with an Overweight rating based on Hulu's strong competitive position.
+
+## Key Investment Points
+
+- **Market Leadership:** 48M+ paid subscribers with 15% YoY growth
+- **Content Differentiation:** Exclusive originals driving engagement
+- **Advertising Growth:** 25% CAGR in ad revenue through 2026
+- **Margin Expansion:** Path to profitability by FY2025
+
+Hulu's positioning as a premium ad-supported streaming service provides significant competitive advantages in the evolving media landscape.
+
+---SIDEBAR---
+## Hulu Inc.
+**HULU US**
+
+**Price:** $137.50
+**Target:** $185.00
+**Rating:** Overweight
+
+### Analyst
+Sarah Johnson, CFA
+(212) 555-0142
+
+### Performance
+| Period | Return |
+|--------|--------|
+| 1M | +5.2% |
+| 3M | +12.8% |
+| YTD | +24.5% |
+---ENDSIDEBAR---
+`,
+            financial: `# Financial Projections
+
+## Income Statement Summary
+
+| Metric | FY23A | FY24E | FY25E | FY26E |
+|--------|-------|-------|-------|-------|
+| Revenue ($B) | 12.1 | 14.2 | 17.8 | 21.5 |
+| Gross Profit | 4.2 | 5.1 | 6.8 | 8.6 |
+| EBITDA | 0.9 | 1.4 | 2.5 | 3.8 |
+| Net Income | 0.6 | 0.9 | 1.7 | 2.6 |
+| EPS ($) | 1.45 | 2.18 | 4.12 | 6.30 |
+
+## Key Assumptions
+
+- **Revenue Growth:** 17% CAGR driven by subscriber additions
+- **Gross Margin:** Improving from 35% to 40%
+- **Operating Leverage:** SG&A declining as % of revenue
+
+> We model conservative subscriber growth of 3M net adds annually, below management guidance.
+
+## Valuation
+
+| Method | Value |
+|--------|-------|
+| DCF (Base) | $178 |
+| DCF (Bull) | $215 |
+| Peer Multiple | $185 |
+`,
+            risks: `# Investment Risks
+
+## Key Risk Factors
+
+### Competition Risk
+The streaming market remains highly competitive with well-funded rivals including Netflix, Amazon, and Apple TV+.
+
+### Regulatory Risk
+- Antitrust scrutiny of media consolidation
+- Data privacy regulations
+- International content regulations
+
+### Execution Risk
+- Content strategy execution
+- Technology platform investment
+- Subscriber churn management
+
+## Risk Matrix
+
+| Risk | Prob. | Impact |
+|------|-------|--------|
+| Competition | High | Medium |
+| Regulation | Med | High |
+| Churn | Med | Medium |
+
+> Current valuation adequately reflects these risks.
+`
+        };
+
+        function renderMarkdown() {
+            const input = document.getElementById('markdown-input').value;
+            
+            // Check for sidebar markers
+            const hasSidebar = input.includes('---SIDEBAR---');
+            let mainContent = input;
+            let sidebarContent = '';
+            
+            if (hasSidebar) {
+                const parts = input.split('---SIDEBAR---');
+                mainContent = parts[0];
+                if (parts[1]) {
+                    sidebarContent = parts[1].split('---ENDSIDEBAR---')[0];
+                }
+            }
+            
+            const mainHtml = marked.parse(mainContent);
+            const sidebarHtml = sidebarContent ? marked.parse(sidebarContent) : '';
+            
+            const output = document.getElementById('output');
+            const useTwoColumn = currentLayout === 'summary' || hasSidebar;
+            
+            output.innerHTML = `
+                <div class="report-page">
+                    <div class="page-header">
+                        <span class="region">North America</span>
+                        <span class="date">${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    </div>
+                    <div class="analyst-info">
+                        Equity Research<br>
+                        Media & Entertainment
+                    </div>
+                    <div class="page-content">
+                        ${useTwoColumn ? `
+                            <div class="two-column-layout">
+                                <div class="main-column report-content">
+                                    ${mainHtml}
+                                </div>
+                                <div class="sidebar-column report-content">
+                                    ${sidebarHtml || '<p style="color:#999;font-size:8px;">Add ---SIDEBAR--- content</p>'}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="single-column-layout report-content">
+                                ${mainHtml}
+                            </div>
+                        `}
+                    </div>
+                    <div class="page-footer">
+                        <span class="page-num">1</span>
+                    </div>
+                </div>
+            `;
+
+            postProcessReport();
+            updateScale();
+        }
+
+        function postProcessReport() {
+            const contents = document.querySelectorAll('.report-content');
+            contents.forEach(content => {
+                content.innerHTML = content.innerHTML
+                    .replace(/\bOverweight\b/g, '<span class="rating-overweight">Overweight</span>')
+                    .replace(/\bUnderweight\b/g, '<span class="rating-underweight">Underweight</span>')
+                    .replace(/\bNeutral\b/g, '<span class="rating-neutral">Neutral</span>');
+            });
+        }
+
+        function insertTemplate(type) {
+            document.getElementById('markdown-input').value = templates[type];
+            if (type === 'summary') {
+                setLayout('summary');
+            } else {
+                setLayout('body');
+            }
+            renderMarkdown();
+        }
+
+        function insertText(before, after = '') {
+            const textarea = document.getElementById('markdown-input');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
+            
+            textarea.value = text.substring(0, start) + before + selected + after + text.substring(end);
+            textarea.focus();
+            textarea.selectionStart = start + before.length;
+            textarea.selectionEnd = start + before.length + selected.length;
+            
+            debouncedRender();
+        }
+
+        function insertTable() {
+            insertText(`
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Data 1 | Data 2 | Data 3 |
+| Data 4 | Data 5 | Data 6 |
+
+`);
+        }
+
+        function insertSidebar() {
+            insertText(`
+---SIDEBAR---
+## Sidebar Title
+
+**Key Data Point**
+
+| Metric | Value |
+|--------|-------|
+| Item 1 | 100 |
+| Item 2 | 200 |
+---ENDSIDEBAR---
+`);
+        }
+
+        function setLayout(type) {
+            currentLayout = type;
+            document.querySelectorAll('.layout-tabs button').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type === 'summary' ? 'two' : 'single'));
+            });
+            renderMarkdown();
+        }
+
+        function changeScale(delta) {
+            currentScale = Math.max(0.5, Math.min(1.5, currentScale + delta));
+            document.getElementById('scale-display').textContent = Math.round(currentScale * 100) + '%';
+            updateScale();
+        }
+
+        function updateScale() {
+            const container = document.getElementById('preview-container');
+            container.style.transform = `scale(${currentScale})`;
+        }
+
+        function debouncedRender() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(renderMarkdown, 150);
+        }
+
+        // Live preview on input
+        document.getElementById('markdown-input').addEventListener('input', debouncedRender);
+
+        // Ctrl+Enter to force refresh
+        document.getElementById('markdown-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                renderMarkdown();
+            }
+        });
+
+        // Initial render
+        window.onload = function() {
+            insertTemplate('summary');
+        };
+
+        // ============================================
+        // DESIGN AGENT PANEL
+        // ============================================
+        
+        const defaultCSS = {
+            'margin-left': 54,
+            'margin-right': 43,
+            'h1-size': 17,
+            'body-size': 9.5,
+            'sidebar-width': 162,
+            'gutter-width': 14
+        };
+
+        function showDesignPanel() {
+            document.getElementById('design-panel').classList.add('open');
+        }
+
+        function hideDesignPanel() {
+            document.getElementById('design-panel').classList.remove('open');
+        }
+
+        function updateCSS(variable, value) {
+            // Update display
+            document.getElementById(`val-${variable}`).textContent = value;
+            
+            // Update CSS variable
+            document.documentElement.style.setProperty(`--${variable}`, value + 'px');
+            
+            // Re-render to apply changes
+            debouncedRender();
+        }
+
+        function resetCSS() {
+            for (const [variable, value] of Object.entries(defaultCSS)) {
+                document.documentElement.style.setProperty(`--${variable}`, value + 'px');
+                document.getElementById(`val-${variable}`).textContent = value;
+                
+                // Reset slider
+                const slider = document.querySelector(`input[onchange*="${variable}"]`);
+                if (slider) slider.value = value;
+            }
+            debouncedRender();
+            document.getElementById('design-score').textContent = '--';
+            document.getElementById('feedback-section').style.display = 'none';
+        }
+
+        function analyzeLayout() {
+            // Client-side layout analysis (rule-based)
+            const reportPage = document.querySelector('.report-page');
+            if (!reportPage) {
+                alert('No report rendered. Please add content first.');
+                return;
+            }
+
+            const issues = [];
+            const suggestions = [];
+            let score = 100;
+
+            // Get current CSS values
+            const style = getComputedStyle(document.documentElement);
+            const marginLeft = parseFloat(style.getPropertyValue('--margin-left')) || 54;
+            const marginRight = parseFloat(style.getPropertyValue('--margin-right')) || 43;
+            const bodySize = parseFloat(style.getPropertyValue('--body-size')) || 9.5;
+            const sidebarWidth = parseFloat(style.getPropertyValue('--sidebar-width')) || 162;
+
+            // Check margins
+            if (marginLeft < 45) {
+                issues.push('Left margin too tight');
+                suggestions.push('Increase left margin to 50-60px');
+                score -= 10;
+            }
+            if (marginRight < 40) {
+                issues.push('Right margin too tight');
+                suggestions.push('Increase right margin to 45-55px');
+                score -= 10;
+            }
+
+            // Check body font size
+            if (bodySize < 9) {
+                issues.push('Body text may be too small for readability');
+                suggestions.push('Increase body size to 9.5-10px');
+                score -= 15;
+            } else if (bodySize > 11) {
+                issues.push('Body text may be too large');
+                suggestions.push('Reduce body size to 9.5-10.5px');
+                score -= 10;
+            }
+
+            // Check sidebar
+            if (sidebarWidth < 140) {
+                issues.push('Sidebar may be too narrow');
+                suggestions.push('Increase sidebar width to 150-170px');
+                score -= 10;
+            } else if (sidebarWidth > 180) {
+                issues.push('Sidebar may be too wide');
+                suggestions.push('Reduce sidebar width to 150-170px');
+                score -= 10;
+            }
+
+            // Check content density
+            const content = reportPage.querySelector('.page-content');
+            if (content) {
+                const contentRect = content.getBoundingClientRect();
+                const pageRect = reportPage.getBoundingClientRect();
+                const coverage = (contentRect.height / pageRect.height) * 100;
+
+                if (coverage > 85) {
+                    issues.push('Content density too high');
+                    suggestions.push('Increase margins or reduce content');
+                    score -= 10;
+                } else if (coverage < 50) {
+                    issues.push('Page appears sparse');
+                    suggestions.push('Add more content or reduce margins');
+                    score -= 5;
+                }
+            }
+
+            // Check for overflow
+            const textBlocks = reportPage.querySelectorAll('p, li, td');
+            textBlocks.forEach(block => {
+                if (block.scrollWidth > block.clientWidth + 5) {
+                    issues.push('Text overflow detected');
+                    score -= 5;
+                }
+            });
+
+            // Ensure minimum score
+            score = Math.max(0, Math.min(100, score));
+
+            // Add default suggestions if good
+            if (issues.length === 0) {
+                suggestions.push('Layout looks professional!');
+                suggestions.push('Consider A/B testing with users');
+            }
+
+            // Update UI
+            document.getElementById('design-score').textContent = score;
+            document.getElementById('feedback-section').style.display = 'block';
+
+            const issueList = document.getElementById('issue-list');
+            issueList.innerHTML = issues.map(issue => 
+                `<li><span class="issue-icon">⚠️</span> ${issue}</li>`
+            ).join('') || '<li>No issues detected</li>';
+
+            const suggestionList = document.getElementById('suggestion-list');
+            suggestionList.innerHTML = suggestions.map(sug => 
+                `<li><span class="issue-icon">💡</span> ${sug}</li>`
+            ).join('');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            // Show loading overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'export-overlay';
+            overlay.innerHTML = `
+                <div class="export-modal">
+                    <div class="export-spinner"></div>
+                    <h3>Generating PDF...</h3>
+                    <p style="color: #666; font-size: 12px;">Please wait</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Get the report page element
+            const element = document.querySelector('.report-page');
+            
+            if (!element) {
+                alert('No report to export. Please render content first.');
+                overlay.remove();
+                return;
+            }
+
+            // LETTER size in points
+            const LETTER_WIDTH = 612;
+            const LETTER_HEIGHT = 792;
+            
+            // Get current element size
+            const currentWidth = element.offsetWidth;
+            const currentHeight = element.offsetHeight;
+            
+            // Calculate scale to fit LETTER
+            const scaleX = LETTER_WIDTH / currentWidth;
+            const scaleY = LETTER_HEIGHT / currentHeight;
+            const fitScale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+
+            // Clone and prepare for export
+            const clone = element.cloneNode(true);
+            clone.style.transform = 'none';
+            clone.style.boxShadow = 'none';
+            clone.style.width = LETTER_WIDTH + 'px';
+            clone.style.minHeight = LETTER_HEIGHT + 'px';
+            clone.style.maxHeight = LETTER_HEIGHT + 'px';
+            clone.style.overflow = 'hidden';
+            
+            // Scale inner content to fit
+            const pageContent = clone.querySelector('.page-content');
+            if (pageContent) {
+                pageContent.style.transform = `scale(${fitScale})`;
+                pageContent.style.transformOrigin = 'top left';
+            }
+            
+            // Create a wrapper div positioned off-screen
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = `
+                position: fixed;
+                left: -9999px;
+                top: 0;
+                background: white;
+                width: ${LETTER_WIDTH}px;
+                height: ${LETTER_HEIGHT}px;
+            `;
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
+
+            // PDF options - exact LETTER size
+            const opt = {
+                margin: 0,
+                filename: 'equity-research-report.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    width: LETTER_WIDTH,
+                    height: LETTER_HEIGHT
+                },
+                jsPDF: { 
+                    unit: 'pt', 
+                    format: [LETTER_WIDTH, LETTER_HEIGHT],
+                    orientation: 'portrait'
+                }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(clone).save().then(() => {
+                // Cleanup
+                wrapper.remove();
+                overlay.remove();
+            }).catch(err => {
+                console.error('PDF export failed:', err);
+                wrapper.remove();
+                overlay.remove();
+                alert('PDF export failed. Try using Print instead.');
+            });
+        }
+    </script>
+</body>
+</html>
