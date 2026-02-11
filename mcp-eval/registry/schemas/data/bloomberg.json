@@ -1,0 +1,88 @@
+{
+  "server": "bloomberg",
+  "domain": "data",
+  "description": "Bloomberg terminal data — market data, company analytics, fixed income, commodities, and economic indicators",
+  "tools": [
+    {
+      "name": "bloomberg_get_security_data",
+      "description": "Get comprehensive security data from Bloomberg including pricing, fundamentals, and analytics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "security": { "type": "string", "description": "Bloomberg security identifier (e.g., AAPL US Equity, SPX Index)" },
+          "fields": { "type": "array", "items": { "type": "string" }, "description": "Bloomberg fields to retrieve (e.g., PX_LAST, PE_RATIO, MARKET_CAP)" }
+        },
+        "required": ["security", "fields"]
+      }
+    },
+    {
+      "name": "bloomberg_get_historical_data",
+      "description": "Get historical time series data from Bloomberg for a security",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "security": { "type": "string", "description": "Bloomberg security identifier" },
+          "fields": { "type": "array", "items": { "type": "string" }, "description": "Fields to retrieve" },
+          "start_date": { "type": "string", "description": "Start date (YYYYMMDD)" },
+          "end_date": { "type": "string", "description": "End date (YYYYMMDD)" },
+          "periodicity": { "type": "string", "enum": ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"], "description": "Data periodicity" }
+        },
+        "required": ["security", "fields", "start_date", "end_date"]
+      }
+    },
+    {
+      "name": "bloomberg_screen_securities",
+      "description": "Screen securities using Bloomberg EQS (Equity Screening) criteria",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asset_class": { "type": "string", "enum": ["equity", "fixed_income", "commodity", "fx", "index"], "description": "Asset class" },
+          "criteria": { "type": "array", "items": { "type": "object" }, "description": "Screening criteria (field, operator, value)" },
+          "fields": { "type": "array", "items": { "type": "string" }, "description": "Fields to include in results" },
+          "max_results": { "type": "integer", "description": "Maximum results", "default": 100 }
+        },
+        "required": ["asset_class", "criteria"]
+      }
+    },
+    {
+      "name": "bloomberg_get_economic_calendar",
+      "description": "Get economic events and indicators calendar from Bloomberg",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "country": { "type": "string", "description": "Country code (e.g., US, GB, JP)" },
+          "start_date": { "type": "string", "description": "Start date (YYYYMMDD)" },
+          "end_date": { "type": "string", "description": "End date (YYYYMMDD)" },
+          "importance": { "type": "string", "enum": ["high", "medium", "low", "all"], "description": "Event importance filter", "default": "high" }
+        },
+        "required": ["country"]
+      }
+    },
+    {
+      "name": "bloomberg_get_news",
+      "description": "Get latest news articles and headlines from Bloomberg",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query for news" },
+          "security": { "type": "string", "description": "Filter news for a specific security" },
+          "topic": { "type": "string", "enum": ["markets", "technology", "politics", "economics", "commodities"], "description": "News topic filter" },
+          "limit": { "type": "integer", "description": "Number of articles", "default": 10 }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "bloomberg_get_credit_rating",
+      "description": "Get credit ratings from major agencies for a company or security",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "security": { "type": "string", "description": "Bloomberg security identifier or company ticker" },
+          "agency": { "type": "string", "enum": ["SP", "Moodys", "Fitch", "all"], "description": "Rating agency filter", "default": "all" }
+        },
+        "required": ["security"]
+      }
+    }
+  ]
+}

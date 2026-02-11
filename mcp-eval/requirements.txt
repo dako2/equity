@@ -1,0 +1,15 @@
+# MCP Tool Eval Framework Dependencies
+
+# LLM providers
+openai>=1.12.0
+anthropic>=0.18.0
+
+# Config & data
+pyyaml>=6.0
+jsonschema>=4.20.0
+
+# Async
+aiohttp>=3.9.0
+
+# CLI / misc
+python-dotenv>=1.0.0

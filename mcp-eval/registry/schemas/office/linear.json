@@ -1,0 +1,92 @@
+{
+  "server": "linear",
+  "domain": "office",
+  "description": "Linear project management — issues, projects, cycles, teams, and workflow automation",
+  "tools": [
+    {
+      "name": "linear_create_issue",
+      "description": "Create a new issue in a Linear team project",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "team_id": { "type": "string", "description": "Team identifier" },
+          "title": { "type": "string", "description": "Issue title" },
+          "description": { "type": "string", "description": "Issue description (Markdown supported)" },
+          "priority": { "type": "integer", "enum": [0, 1, 2, 3, 4], "description": "Priority: 0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low" },
+          "assignee_id": { "type": "string", "description": "User ID to assign the issue to" },
+          "label_ids": { "type": "array", "items": { "type": "string" }, "description": "Label IDs to apply" },
+          "project_id": { "type": "string", "description": "Project ID to associate with" },
+          "cycle_id": { "type": "string", "description": "Cycle ID to add the issue to" }
+        },
+        "required": ["team_id", "title"]
+      }
+    },
+    {
+      "name": "linear_search_issues",
+      "description": "Search for issues across Linear teams using text query or filters",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query text" },
+          "team_id": { "type": "string", "description": "Filter by team" },
+          "status": { "type": "string", "enum": ["backlog", "todo", "in_progress", "done", "cancelled"], "description": "Filter by status" },
+          "assignee_id": { "type": "string", "description": "Filter by assignee" },
+          "label": { "type": "string", "description": "Filter by label name" },
+          "limit": { "type": "integer", "description": "Max results", "default": 25 }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "linear_update_issue",
+      "description": "Update an existing Linear issue's properties",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": { "type": "string", "description": "Issue ID to update" },
+          "title": { "type": "string", "description": "New title" },
+          "status": { "type": "string", "description": "New status" },
+          "priority": { "type": "integer", "description": "New priority level" },
+          "assignee_id": { "type": "string", "description": "New assignee" },
+          "description": { "type": "string", "description": "Updated description" }
+        },
+        "required": ["issue_id"]
+      }
+    },
+    {
+      "name": "linear_list_projects",
+      "description": "List all projects in a Linear team",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "team_id": { "type": "string", "description": "Team ID to list projects for" },
+          "status": { "type": "string", "enum": ["planned", "started", "paused", "completed", "cancelled"], "description": "Filter by project status" }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "linear_get_issue",
+      "description": "Get detailed information about a specific Linear issue by its identifier",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": { "type": "string", "description": "Issue identifier (e.g., ENG-123)" }
+        },
+        "required": ["issue_id"]
+      }
+    },
+    {
+      "name": "linear_add_comment",
+      "description": "Add a comment to a Linear issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": { "type": "string", "description": "Issue ID to comment on" },
+          "body": { "type": "string", "description": "Comment body (Markdown supported)" }
+        },
+        "required": ["issue_id", "body"]
+      }
+    }
+  ]
+}

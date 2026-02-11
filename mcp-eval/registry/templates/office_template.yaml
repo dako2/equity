@@ -1,0 +1,130 @@
+# Template for generating office/productivity MCP tool schemas
+# Used by generator.py to create realistic tool schemas via LLM
+
+domain: office
+
+archetypes:
+  - name: project_management
+    description_template: "{product_name} project management — tasks, projects, milestones, and team collaboration"
+    example_products: ["Asana", "Monday.com", "Basecamp", "ClickUp", "Todoist", "Trello", "Wrike"]
+    tool_patterns:
+      - action: create_task
+        description: "Create a new task or work item"
+        typical_params: ["project_id", "title", "description", "assignee", "due_date", "priority", "labels"]
+        required_params: ["project_id", "title"]
+      - action: search_tasks
+        description: "Search for tasks by query, status, or assignee"
+        typical_params: ["query", "project_id", "status", "assignee", "limit"]
+        required_params: ["query"]
+      - action: update_task
+        description: "Update a task's status, assignee, or other properties"
+        typical_params: ["task_id", "status", "assignee", "priority", "due_date"]
+        required_params: ["task_id"]
+      - action: list_projects
+        description: "List all projects or workspaces"
+        typical_params: ["status", "limit"]
+        required_params: []
+      - action: add_comment
+        description: "Add a comment to a task"
+        typical_params: ["task_id", "text"]
+        required_params: ["task_id", "text"]
+
+  - name: communication
+    description_template: "{product_name} team communication — messages, channels, video calls, and notifications"
+    example_products: ["Microsoft Teams", "Discord", "Zoom", "Telegram", "WhatsApp Business"]
+    tool_patterns:
+      - action: send_message
+        description: "Send a message to a channel or conversation"
+        typical_params: ["channel", "text", "thread_id"]
+        required_params: ["channel", "text"]
+      - action: search_messages
+        description: "Search messages across channels"
+        typical_params: ["query", "channel", "from_user", "after", "before", "limit"]
+        required_params: ["query"]
+      - action: list_channels
+        description: "List available channels or conversations"
+        typical_params: ["type", "limit"]
+        required_params: []
+      - action: create_channel
+        description: "Create a new channel or group"
+        typical_params: ["name", "description", "is_private", "members"]
+        required_params: ["name"]
+      - action: schedule_meeting
+        description: "Schedule a video/audio meeting"
+        typical_params: ["title", "start_time", "duration", "participants", "agenda"]
+        required_params: ["title", "start_time", "participants"]
+
+  - name: document_management
+    description_template: "{product_name} document management — create, edit, search, and share documents"
+    example_products: ["Confluence", "Coda", "Dropbox Paper", "Quip", "SharePoint"]
+    tool_patterns:
+      - action: create_document
+        description: "Create a new document or page"
+        typical_params: ["title", "content", "space_id", "parent_id", "template"]
+        required_params: ["title"]
+      - action: search_documents
+        description: "Search documents by query"
+        typical_params: ["query", "space_id", "author", "type", "limit"]
+        required_params: ["query"]
+      - action: update_document
+        description: "Update document content or properties"
+        typical_params: ["document_id", "title", "content", "status"]
+        required_params: ["document_id"]
+      - action: share_document
+        description: "Share a document with users or groups"
+        typical_params: ["document_id", "email", "permission"]
+        required_params: ["document_id", "email", "permission"]
+      - action: get_document
+        description: "Get a document's content and metadata"
+        typical_params: ["document_id", "version"]
+        required_params: ["document_id"]
+
+  - name: crm
+    description_template: "{product_name} CRM — contacts, deals, pipelines, and sales automation"
+    example_products: ["Salesforce", "HubSpot", "Pipedrive", "Zoho CRM", "Close.io"]
+    tool_patterns:
+      - action: search_contacts
+        description: "Search for contacts or leads"
+        typical_params: ["query", "company", "status", "limit"]
+        required_params: ["query"]
+      - action: create_contact
+        description: "Create a new contact or lead"
+        typical_params: ["name", "email", "phone", "company", "title", "notes"]
+        required_params: ["name", "email"]
+      - action: update_deal
+        description: "Update a deal in the pipeline"
+        typical_params: ["deal_id", "stage", "value", "close_date", "owner"]
+        required_params: ["deal_id"]
+      - action: list_deals
+        description: "List deals in a pipeline"
+        typical_params: ["pipeline_id", "stage", "owner", "limit"]
+        required_params: []
+      - action: log_activity
+        description: "Log a call, email, or meeting activity"
+        typical_params: ["contact_id", "type", "subject", "notes", "duration"]
+        required_params: ["contact_id", "type", "subject"]
+
+  - name: email
+    description_template: "{product_name} email — send, receive, search, and manage email messages"
+    example_products: ["Outlook", "Fastmail", "ProtonMail", "Mailgun", "SendGrid"]
+    tool_patterns:
+      - action: send_email
+        description: "Send an email"
+        typical_params: ["to", "subject", "body", "cc", "bcc", "attachments"]
+        required_params: ["to", "subject", "body"]
+      - action: search_emails
+        description: "Search emails by query"
+        typical_params: ["query", "folder", "from", "to", "date_range", "limit"]
+        required_params: ["query"]
+      - action: read_email
+        description: "Read full email content"
+        typical_params: ["message_id", "format"]
+        required_params: ["message_id"]
+      - action: list_folders
+        description: "List email folders/labels"
+        typical_params: []
+        required_params: []
+      - action: move_email
+        description: "Move email to a folder"
+        typical_params: ["message_id", "folder"]
+        required_params: ["message_id", "folder"]

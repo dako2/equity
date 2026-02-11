@@ -1,0 +1,14 @@
+{
+  "tool": "fred_get_latest_value",
+  "server": "fred",
+  "description": "Mock FRED latest value response",
+  "default_response": {
+    "series_id": "UNRATE",
+    "title": "Unemployment Rate",
+    "value": 4.1,
+    "date": "2026-01-01",
+    "units": "Percent",
+    "frequency": "Monthly",
+    "seasonal_adjustment": "Seasonally Adjusted"
+  }
+}

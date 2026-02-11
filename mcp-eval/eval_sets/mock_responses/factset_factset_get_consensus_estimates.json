@@ -1,0 +1,27 @@
+{
+  "tool": "factset_get_consensus_estimates",
+  "server": "factset",
+  "description": "Mock consensus estimates response",
+  "default_response": {
+    "ticker": "AAPL",
+    "metric": "eps",
+    "estimates": {
+      "FY1": {
+        "mean": 7.25,
+        "median": 7.22,
+        "high": 7.80,
+        "low": 6.90,
+        "num_analysts": 38,
+        "period_end": "2025-09-30"
+      },
+      "FY2": {
+        "mean": 8.10,
+        "median": 8.05,
+        "high": 8.75,
+        "low": 7.50,
+        "num_analysts": 35,
+        "period_end": "2026-09-30"
+      }
+    }
+  }
+}

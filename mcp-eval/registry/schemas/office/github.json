@@ -1,0 +1,97 @@
+{
+  "server": "github",
+  "domain": "office",
+  "description": "GitHub repository management — issues, pull requests, code search, actions, and repositories",
+  "tools": [
+    {
+      "name": "github_create_issue",
+      "description": "Create a new issue in a GitHub repository",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner (user or org)" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "title": { "type": "string", "description": "Issue title" },
+          "body": { "type": "string", "description": "Issue body (Markdown)" },
+          "labels": { "type": "array", "items": { "type": "string" }, "description": "Labels to apply" },
+          "assignees": { "type": "array", "items": { "type": "string" }, "description": "GitHub usernames to assign" }
+        },
+        "required": ["owner", "repo", "title"]
+      }
+    },
+    {
+      "name": "github_search_code",
+      "description": "Search for code across GitHub repositories",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query (supports GitHub code search syntax)" },
+          "repo": { "type": "string", "description": "Limit to a specific repo (owner/repo format)" },
+          "language": { "type": "string", "description": "Filter by programming language" },
+          "per_page": { "type": "integer", "description": "Results per page", "default": 30 }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "github_create_pull_request",
+      "description": "Create a new pull request in a GitHub repository",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "title": { "type": "string", "description": "PR title" },
+          "body": { "type": "string", "description": "PR description (Markdown)" },
+          "head": { "type": "string", "description": "Branch containing changes" },
+          "base": { "type": "string", "description": "Branch to merge into", "default": "main" },
+          "draft": { "type": "boolean", "description": "Create as draft PR", "default": false }
+        },
+        "required": ["owner", "repo", "title", "head"]
+      }
+    },
+    {
+      "name": "github_list_pull_requests",
+      "description": "List pull requests in a GitHub repository with optional filters",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "state": { "type": "string", "enum": ["open", "closed", "all"], "description": "PR state filter", "default": "open" },
+          "sort": { "type": "string", "enum": ["created", "updated", "popularity"], "description": "Sort field" },
+          "per_page": { "type": "integer", "description": "Results per page", "default": 30 }
+        },
+        "required": ["owner", "repo"]
+      }
+    },
+    {
+      "name": "github_get_file_contents",
+      "description": "Get the contents of a file from a GitHub repository",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "Repository owner" },
+          "repo": { "type": "string", "description": "Repository name" },
+          "path": { "type": "string", "description": "File path in the repository" },
+          "ref": { "type": "string", "description": "Branch, tag, or commit SHA", "default": "main" }
+        },
+        "required": ["owner", "repo", "path"]
+      }
+    },
+    {
+      "name": "github_list_repos",
+      "description": "List repositories for a user or organization on GitHub",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "description": "GitHub username or organization" },
+          "type": { "type": "string", "enum": ["all", "owner", "member"], "description": "Type filter" },
+          "sort": { "type": "string", "enum": ["created", "updated", "pushed", "full_name"], "description": "Sort field" },
+          "per_page": { "type": "integer", "description": "Results per page", "default": 30 }
+        },
+        "required": ["owner"]
+      }
+    }
+  ]
+}

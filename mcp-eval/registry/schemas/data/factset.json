@@ -1,0 +1,87 @@
+{
+  "server": "factset",
+  "domain": "data",
+  "description": "FactSet financial data and analytics — fundamentals, estimates, pricing, and company screening",
+  "tools": [
+    {
+      "name": "factset_get_company_fundamentals",
+      "description": "Get fundamental financial data for a company including P/E, EV/EBITDA, margins, and growth rates",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "metrics": { "type": "array", "items": { "type": "string" }, "description": "Specific metrics to retrieve (e.g., PE_ratio, EV_EBITDA, gross_margin)" },
+          "period": { "type": "string", "enum": ["LTM", "FY0", "FY1", "FY2"], "description": "Time period", "default": "LTM" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "factset_get_consensus_estimates",
+      "description": "Get Wall Street analyst consensus estimates for revenue, EPS, and other metrics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "metric": { "type": "string", "enum": ["revenue", "eps", "ebitda", "net_income", "free_cash_flow"], "description": "Metric to get estimates for", "default": "eps" },
+          "periods": { "type": "array", "items": { "type": "string" }, "description": "Forecast periods (e.g., FY1, FY2, Q1, Q2)" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "factset_get_price_history",
+      "description": "Get historical stock price data including OHLCV",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "start_date": { "type": "string", "description": "Start date (YYYY-MM-DD)" },
+          "end_date": { "type": "string", "description": "End date (YYYY-MM-DD)" },
+          "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly"], "description": "Data frequency", "default": "daily" }
+        },
+        "required": ["ticker", "start_date", "end_date"]
+      }
+    },
+    {
+      "name": "factset_screen_companies",
+      "description": "Screen and filter companies based on financial criteria",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "universe": { "type": "string", "description": "Stock universe (e.g., SP500, RUSSELL2000, GLOBAL)", "default": "SP500" },
+          "filters": { "type": "array", "items": { "type": "object", "properties": { "metric": { "type": "string" }, "operator": { "type": "string", "enum": [">", "<", ">=", "<=", "==", "between"] }, "value": {} } }, "description": "Filter criteria" },
+          "sort_by": { "type": "string", "description": "Metric to sort results by" },
+          "limit": { "type": "integer", "description": "Max results", "default": 50 }
+        },
+        "required": ["filters"]
+      }
+    },
+    {
+      "name": "factset_get_ownership",
+      "description": "Get institutional ownership data for a company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "holder_type": { "type": "string", "enum": ["institutional", "insider", "all"], "description": "Type of holders", "default": "institutional" },
+          "limit": { "type": "integer", "description": "Number of top holders to return", "default": 20 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "factset_get_peer_group",
+      "description": "Get peer group companies and comparative metrics for a given company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "metrics": { "type": "array", "items": { "type": "string" }, "description": "Metrics to compare across peers" },
+          "peer_count": { "type": "integer", "description": "Number of peers to include", "default": 10 }
+        },
+        "required": ["ticker"]
+      }
+    }
+  ]
+}

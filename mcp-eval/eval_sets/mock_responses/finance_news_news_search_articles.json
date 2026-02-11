@@ -1,0 +1,32 @@
+{
+  "tool": "news_search_articles",
+  "server": "finance_news",
+  "description": "Mock news search response",
+  "default_response": {
+    "query": "Fed interest rate decision",
+    "total_results": 145,
+    "articles": [
+      {
+        "title": "Fed Holds Rates Steady, Signals Patience on Future Cuts",
+        "source": "Reuters",
+        "published_at": "2026-02-10T14:30:00Z",
+        "url": "https://reuters.com/example/fed-rates",
+        "summary": "The Federal Reserve held interest rates unchanged at its latest meeting, signaling a cautious approach to future rate adjustments."
+      },
+      {
+        "title": "Markets Rally as Fed Maintains Dovish Tone",
+        "source": "CNBC",
+        "published_at": "2026-02-10T15:00:00Z",
+        "url": "https://cnbc.com/example/fed-markets",
+        "summary": "US equity markets gained following the Federal Reserve's decision to hold rates, with the S&P 500 rising 0.8%."
+      },
+      {
+        "title": "Analysis: What the Fed's Rate Decision Means for Bond Investors",
+        "source": "Wall Street Journal",
+        "published_at": "2026-02-10T16:00:00Z",
+        "url": "https://wsj.com/example/fed-bonds",
+        "summary": "Bond yields fell as investors digested the Fed's latest policy statement and its implications for fixed income markets."
+      }
+    ]
+  }
+}

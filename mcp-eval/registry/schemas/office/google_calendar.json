@@ -1,0 +1,81 @@
+{
+  "server": "google_calendar",
+  "domain": "office",
+  "description": "Google Calendar management — events, calendars, availability, and scheduling",
+  "tools": [
+    {
+      "name": "gcal_create_event",
+      "description": "Create a new event on Google Calendar",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "description": "Event title" },
+          "start_time": { "type": "string", "description": "Start time in ISO 8601 format" },
+          "end_time": { "type": "string", "description": "End time in ISO 8601 format" },
+          "description": { "type": "string", "description": "Event description" },
+          "attendees": { "type": "array", "items": { "type": "string" }, "description": "List of attendee email addresses" },
+          "location": { "type": "string", "description": "Event location or video call link" },
+          "calendar_id": { "type": "string", "description": "Calendar ID (default: primary)", "default": "primary" },
+          "recurrence": { "type": "string", "description": "Recurrence rule (RRULE format)" }
+        },
+        "required": ["title", "start_time", "end_time"]
+      }
+    },
+    {
+      "name": "gcal_list_events",
+      "description": "List upcoming events from Google Calendar within a time range",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "time_min": { "type": "string", "description": "Start of time range (ISO 8601)" },
+          "time_max": { "type": "string", "description": "End of time range (ISO 8601)" },
+          "calendar_id": { "type": "string", "description": "Calendar ID", "default": "primary" },
+          "max_results": { "type": "integer", "description": "Maximum number of events", "default": 10 },
+          "query": { "type": "string", "description": "Free text search query" }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "gcal_update_event",
+      "description": "Update an existing Google Calendar event",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_id": { "type": "string", "description": "Event ID to update" },
+          "title": { "type": "string", "description": "New title" },
+          "start_time": { "type": "string", "description": "New start time" },
+          "end_time": { "type": "string", "description": "New end time" },
+          "attendees": { "type": "array", "items": { "type": "string" }, "description": "Updated attendee list" },
+          "calendar_id": { "type": "string", "description": "Calendar ID", "default": "primary" }
+        },
+        "required": ["event_id"]
+      }
+    },
+    {
+      "name": "gcal_delete_event",
+      "description": "Delete an event from Google Calendar",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_id": { "type": "string", "description": "Event ID to delete" },
+          "calendar_id": { "type": "string", "description": "Calendar ID", "default": "primary" }
+        },
+        "required": ["event_id"]
+      }
+    },
+    {
+      "name": "gcal_check_availability",
+      "description": "Check free/busy availability for one or more users in a time range",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "emails": { "type": "array", "items": { "type": "string" }, "description": "Email addresses to check availability for" },
+          "time_min": { "type": "string", "description": "Start of time range (ISO 8601)" },
+          "time_max": { "type": "string", "description": "End of time range (ISO 8601)" }
+        },
+        "required": ["emails", "time_min", "time_max"]
+      }
+    }
+  ]
+}

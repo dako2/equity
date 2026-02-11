@@ -1,0 +1,122 @@
+# Template for generating data connector MCP tool schemas
+# Used by generator.py to create realistic tool schemas via LLM
+
+domain: data
+
+archetypes:
+  - name: market_data
+    description_template: "{product_name} market data — real-time and historical pricing, volumes, and market statistics"
+    example_products: ["Polygon.io", "Alpha Vantage", "IEX Cloud", "Quandl", "Twelve Data", "Intrinio"]
+    tool_patterns:
+      - action: get_quote
+        description: "Get real-time or delayed stock quote"
+        typical_params: ["ticker", "exchange"]
+        required_params: ["ticker"]
+      - action: get_historical_prices
+        description: "Get historical OHLCV price data"
+        typical_params: ["ticker", "start_date", "end_date", "interval", "adjusted"]
+        required_params: ["ticker", "start_date", "end_date"]
+      - action: get_intraday
+        description: "Get intraday tick or bar data"
+        typical_params: ["ticker", "interval", "date"]
+        required_params: ["ticker"]
+      - action: get_market_status
+        description: "Check market open/close status"
+        typical_params: ["exchange"]
+        required_params: []
+      - action: get_technical_indicators
+        description: "Calculate technical indicators (SMA, RSI, MACD, etc.)"
+        typical_params: ["ticker", "indicator", "period", "interval"]
+        required_params: ["ticker", "indicator"]
+
+  - name: fundamental_data
+    description_template: "{product_name} fundamental data — financial statements, ratios, valuations, and company metrics"
+    example_products: ["Morningstar", "S&P Capital IQ", "Koyfin", "SimFin", "Financial Modeling Prep"]
+    tool_patterns:
+      - action: get_financials
+        description: "Get financial statements"
+        typical_params: ["ticker", "statement_type", "period", "num_periods"]
+        required_params: ["ticker", "statement_type"]
+      - action: get_ratios
+        description: "Get financial ratios and valuation metrics"
+        typical_params: ["ticker", "ratios", "period"]
+        required_params: ["ticker"]
+      - action: get_company_profile
+        description: "Get company description, sector, and basic info"
+        typical_params: ["ticker"]
+        required_params: ["ticker"]
+      - action: compare_companies
+        description: "Compare metrics across multiple companies"
+        typical_params: ["tickers", "metrics"]
+        required_params: ["tickers", "metrics"]
+      - action: screen_stocks
+        description: "Screen stocks by financial criteria"
+        typical_params: ["criteria", "market", "sector", "limit"]
+        required_params: ["criteria"]
+
+  - name: alternative_data
+    description_template: "{product_name} alternative data — web traffic, satellite imagery, social sentiment, and non-traditional datasets"
+    example_products: ["Thinknum", "SimilarWeb", "Yipit", "Eagle Alpha", "Orbital Insight"]
+    tool_patterns:
+      - action: get_web_traffic
+        description: "Get web traffic estimates for a company's website"
+        typical_params: ["domain", "start_date", "end_date", "granularity"]
+        required_params: ["domain"]
+      - action: get_social_sentiment
+        description: "Get social media sentiment data"
+        typical_params: ["ticker", "platform", "lookback_days"]
+        required_params: ["ticker"]
+      - action: get_job_postings
+        description: "Get job posting data as a proxy for company growth"
+        typical_params: ["company", "role", "location", "lookback_days"]
+        required_params: ["company"]
+      - action: get_app_downloads
+        description: "Get mobile app download estimates"
+        typical_params: ["app_id", "platform", "country", "period"]
+        required_params: ["app_id"]
+
+  - name: economic_data
+    description_template: "{product_name} economic data — macroeconomic indicators, central bank data, and economic forecasts"
+    example_products: ["World Bank API", "IMF Data", "OECD Data", "Eurostat", "Trading Economics"]
+    tool_patterns:
+      - action: get_indicator
+        description: "Get economic indicator time series"
+        typical_params: ["indicator_id", "country", "start_date", "end_date", "frequency"]
+        required_params: ["indicator_id", "country"]
+      - action: search_indicators
+        description: "Search for available economic indicators"
+        typical_params: ["query", "category", "limit"]
+        required_params: ["query"]
+      - action: get_forecast
+        description: "Get economic forecasts"
+        typical_params: ["indicator", "country", "horizon"]
+        required_params: ["indicator", "country"]
+      - action: compare_countries
+        description: "Compare an economic metric across countries"
+        typical_params: ["indicator", "countries", "period"]
+        required_params: ["indicator", "countries"]
+
+  - name: crypto_data
+    description_template: "{product_name} cryptocurrency data — prices, on-chain metrics, DeFi, and exchange data"
+    example_products: ["CoinGecko", "CoinMarketCap", "Glassnode", "Messari", "DeFi Llama"]
+    tool_patterns:
+      - action: get_crypto_price
+        description: "Get cryptocurrency price and market data"
+        typical_params: ["coin_id", "vs_currency"]
+        required_params: ["coin_id"]
+      - action: get_historical_prices
+        description: "Get historical cryptocurrency prices"
+        typical_params: ["coin_id", "start_date", "end_date", "interval"]
+        required_params: ["coin_id"]
+      - action: get_market_overview
+        description: "Get overall crypto market statistics"
+        typical_params: ["category", "limit"]
+        required_params: []
+      - action: get_on_chain_metrics
+        description: "Get blockchain on-chain data"
+        typical_params: ["coin_id", "metrics", "period"]
+        required_params: ["coin_id", "metrics"]
+      - action: get_defi_protocols
+        description: "Get DeFi protocol TVL and statistics"
+        typical_params: ["protocol", "chain", "limit"]
+        required_params: []

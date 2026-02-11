@@ -1,0 +1,67 @@
+{
+  "server": "nasdaq",
+  "domain": "data",
+  "description": "NASDAQ market data — real-time quotes, market movers, IPO calendar, and exchange-level data",
+  "tools": [
+    {
+      "name": "nasdaq_get_quote",
+      "description": "Get real-time stock quote from NASDAQ including price, volume, bid/ask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "nasdaq_get_market_movers",
+      "description": "Get top market movers (gainers, losers, most active) on NASDAQ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": { "type": "string", "enum": ["gainers", "losers", "most_active", "most_volume"], "description": "Type of movers" },
+          "exchange": { "type": "string", "enum": ["NASDAQ", "NYSE", "AMEX"], "description": "Exchange filter", "default": "NASDAQ" },
+          "limit": { "type": "integer", "description": "Number of results", "default": 10 }
+        },
+        "required": ["category"]
+      }
+    },
+    {
+      "name": "nasdaq_get_ipo_calendar",
+      "description": "Get upcoming and recent IPO listings on NASDAQ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["upcoming", "priced", "filed", "withdrawn"], "description": "IPO status filter", "default": "upcoming" },
+          "start_date": { "type": "string", "description": "Start date filter (YYYY-MM-DD)" },
+          "end_date": { "type": "string", "description": "End date filter (YYYY-MM-DD)" }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "nasdaq_get_dividend_history",
+      "description": "Get dividend payment history for a stock",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "years": { "type": "integer", "description": "Number of years of history", "default": 5 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "nasdaq_get_short_interest",
+      "description": "Get short interest data for a stock including short ratio and days to cover",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" }
+        },
+        "required": ["ticker"]
+      }
+    }
+  ]
+}

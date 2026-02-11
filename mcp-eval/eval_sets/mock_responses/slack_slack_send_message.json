@@ -1,0 +1,16 @@
+{
+  "tool": "slack_send_message",
+  "server": "slack",
+  "description": "Mock Slack send message response",
+  "default_response": {
+    "ok": true,
+    "channel": "C01234567",
+    "ts": "1707580800.000100",
+    "message": {
+      "text": "the deploy is complete",
+      "user": "U01234567",
+      "ts": "1707580800.000100",
+      "type": "message"
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "server": "refinitiv",
+  "domain": "data",
+  "description": "Refinitiv (LSEG) financial data — Eikon data, deals, M&A, ESG scores, and fixed income analytics",
+  "tools": [
+    {
+      "name": "refinitiv_get_company_profile",
+      "description": "Get detailed company profile from Refinitiv including business description, officers, and segments",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ric": { "type": "string", "description": "Reuters Instrument Code (e.g., AAPL.O for Apple on NASDAQ)" }
+        },
+        "required": ["ric"]
+      }
+    },
+    {
+      "name": "refinitiv_get_deals",
+      "description": "Search for M&A deals, IPOs, and capital market transactions",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "deal_type": { "type": "string", "enum": ["ma", "ipo", "debt", "equity_offering"], "description": "Type of deal" },
+          "target_company": { "type": "string", "description": "Target company name or ticker" },
+          "acquirer": { "type": "string", "description": "Acquirer company name or ticker" },
+          "date_from": { "type": "string", "description": "Start date (YYYY-MM-DD)" },
+          "date_to": { "type": "string", "description": "End date (YYYY-MM-DD)" },
+          "min_value": { "type": "number", "description": "Minimum deal value in USD millions" },
+          "limit": { "type": "integer", "description": "Number of results", "default": 25 }
+        },
+        "required": ["deal_type"]
+      }
+    },
+    {
+      "name": "refinitiv_get_esg_scores",
+      "description": "Get ESG (Environmental, Social, Governance) scores and ratings from Refinitiv",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ric": { "type": "string", "description": "Reuters Instrument Code" },
+          "category": { "type": "string", "enum": ["overall", "environmental", "social", "governance"], "description": "ESG category", "default": "overall" }
+        },
+        "required": ["ric"]
+      }
+    },
+    {
+      "name": "refinitiv_get_estimates",
+      "description": "Get analyst consensus estimates from Refinitiv I/B/E/S",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ric": { "type": "string", "description": "Reuters Instrument Code" },
+          "metric": { "type": "string", "enum": ["eps", "revenue", "ebitda", "dps", "bvps"], "description": "Estimate metric" },
+          "period_type": { "type": "string", "enum": ["annual", "quarterly"], "description": "Period type", "default": "annual" }
+        },
+        "required": ["ric", "metric"]
+      }
+    },
+    {
+      "name": "refinitiv_get_bond_data",
+      "description": "Get bond/fixed income security data including yield, duration, and credit spread",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "isin": { "type": "string", "description": "ISIN of the bond" },
+          "fields": { "type": "array", "items": { "type": "string" }, "description": "Data fields (e.g., yield, duration, spread, coupon)" }
+        },
+        "required": ["isin"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "server": "finance_news",
+  "domain": "data",
+  "description": "Financial news aggregation — headlines, sentiment analysis, trending topics, and press releases from multiple sources",
+  "tools": [
+    {
+      "name": "news_search_articles",
+      "description": "Search for financial news articles across multiple sources (Reuters, CNBC, WSJ, FT, etc.)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query" },
+          "tickers": { "type": "array", "items": { "type": "string" }, "description": "Filter by stock tickers" },
+          "sources": { "type": "array", "items": { "type": "string" }, "description": "Filter by news sources" },
+          "from_date": { "type": "string", "description": "Start date (YYYY-MM-DD)" },
+          "to_date": { "type": "string", "description": "End date (YYYY-MM-DD)" },
+          "limit": { "type": "integer", "description": "Number of articles", "default": 20 }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "news_get_sentiment",
+      "description": "Get aggregated news sentiment score for a stock or topic",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "lookback_days": { "type": "integer", "description": "Number of days to analyze", "default": 7 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "news_get_trending_topics",
+      "description": "Get currently trending financial news topics and themes",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": { "type": "string", "enum": ["all", "stocks", "crypto", "commodities", "macro", "earnings"], "description": "Topic category", "default": "all" },
+          "limit": { "type": "integer", "description": "Number of trending topics", "default": 10 }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "news_get_press_releases",
+      "description": "Get recent press releases for a company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "category": { "type": "string", "enum": ["all", "earnings", "product", "partnership", "regulatory", "executive"], "description": "Release category" },
+          "limit": { "type": "integer", "description": "Number of releases", "default": 10 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "news_get_earnings_calendar",
+      "description": "Get upcoming and recent earnings announcements",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "description": "Date to check (YYYY-MM-DD), defaults to today" },
+          "days_ahead": { "type": "integer", "description": "Number of days ahead to look", "default": 7 },
+          "market_cap_min": { "type": "number", "description": "Minimum market cap filter (in billions)" }
+        },
+        "required": []
+      }
+    }
+  ]
+}

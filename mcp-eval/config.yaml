@@ -1,0 +1,74 @@
+# MCP Tool Eval Framework Configuration
+# ======================================
+
+# Registry settings
+registry:
+  schemas_dir: registry/schemas
+
+# Eval dataset settings
+eval_sets:
+  files:
+    - eval_sets/single_tool.jsonl
+    - eval_sets/multi_tool.jsonl
+    - eval_sets/server_routing.jsonl
+  mock_responses_dir: eval_sets/mock_responses
+
+# Model configurations
+# Add your models here. Each entry defines a provider + model to evaluate.
+models:
+  - name: gpt-4o
+    provider: openai
+    model: gpt-4o
+    # api_key: sk-...  # Or set OPENAI_API_KEY env var
+
+  - name: gpt-4o-mini
+    provider: openai
+    model: gpt-4o-mini
+
+  - name: claude-sonnet
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    # api_key: sk-ant-...  # Or set ANTHROPIC_API_KEY env var
+
+  # Example: self-hosted vLLM
+  # - name: llama-3-70b
+  #   provider: vllm
+  #   model: meta-llama/Meta-Llama-3-70B-Instruct
+  #   base_url: http://localhost:8000/v1
+
+  # Example: Ollama
+  # - name: mistral-local
+  #   provider: ollama
+  #   model: mistral
+  #   base_url: http://localhost:11434/v1
+
+# Runner settings
+runner:
+  max_concurrent: 5          # Max parallel API calls
+  temperature: 0.0           # Sampling temperature
+  max_tokens: 4096           # Max response tokens
+  cache_dir: .cache          # Cache model responses (set to null to disable)
+  system_prompt: |
+    You are a helpful assistant with access to various tools.
+    When the user asks you to do something, use the appropriate tool(s) to help them.
+    Always prefer using tools over providing general advice when a relevant tool is available.
+    If multiple tools are needed, call them in the logical order.
+
+# End-to-end evaluation settings
+e2e:
+  enabled: false             # Set to true to enable e2e mock execution
+  max_turns: 3               # Max tool call -> result -> response turns
+  judge_model: gpt-4o        # Model to use as LLM-as-judge
+  judge_provider: openai     # Provider for the judge model
+
+# Output settings
+output:
+  results_dir: results
+  save_per_case: true        # Save individual case results
+  save_metrics: true         # Save aggregate metrics
+
+# Filtering (optional — override via CLI flags)
+filters:
+  scenarios: null            # null = all; or list like [single_tool, multi_tool]
+  tags: null                 # null = all; or list like [office, data, easy]
+  limit: null                # null = no limit; or integer

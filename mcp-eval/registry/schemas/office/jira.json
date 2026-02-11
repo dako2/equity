@@ -1,0 +1,90 @@
+{
+  "server": "jira",
+  "domain": "office",
+  "description": "Jira project tracking — issues, epics, sprints, boards, and workflows",
+  "tools": [
+    {
+      "name": "jira_create_issue",
+      "description": "Create a new issue (story, bug, task, epic) in a Jira project",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_key": { "type": "string", "description": "Project key (e.g., PROJ)" },
+          "issue_type": { "type": "string", "enum": ["Story", "Bug", "Task", "Epic", "Sub-task"], "description": "Issue type" },
+          "summary": { "type": "string", "description": "Issue summary/title" },
+          "description": { "type": "string", "description": "Detailed description" },
+          "priority": { "type": "string", "enum": ["Highest", "High", "Medium", "Low", "Lowest"], "description": "Issue priority" },
+          "assignee": { "type": "string", "description": "Assignee username or account ID" },
+          "labels": { "type": "array", "items": { "type": "string" }, "description": "Labels to apply" },
+          "epic_key": { "type": "string", "description": "Epic key to link this issue to" }
+        },
+        "required": ["project_key", "issue_type", "summary"]
+      }
+    },
+    {
+      "name": "jira_search_issues",
+      "description": "Search for Jira issues using JQL (Jira Query Language) or text search",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "jql": { "type": "string", "description": "JQL query string (e.g., 'project = PROJ AND status = Open')" },
+          "text": { "type": "string", "description": "Free text search (alternative to JQL)" },
+          "max_results": { "type": "integer", "description": "Maximum results to return", "default": 50 }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "jira_update_issue",
+      "description": "Update fields on an existing Jira issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_key": { "type": "string", "description": "Issue key (e.g., PROJ-123)" },
+          "summary": { "type": "string", "description": "Updated summary" },
+          "description": { "type": "string", "description": "Updated description" },
+          "status": { "type": "string", "description": "Transition to this status" },
+          "priority": { "type": "string", "description": "Updated priority" },
+          "assignee": { "type": "string", "description": "New assignee" }
+        },
+        "required": ["issue_key"]
+      }
+    },
+    {
+      "name": "jira_get_issue",
+      "description": "Get detailed information about a specific Jira issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_key": { "type": "string", "description": "Issue key (e.g., PROJ-123)" },
+          "expand": { "type": "array", "items": { "type": "string" }, "description": "Fields to expand (e.g., changelog, transitions)" }
+        },
+        "required": ["issue_key"]
+      }
+    },
+    {
+      "name": "jira_add_comment",
+      "description": "Add a comment to a Jira issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_key": { "type": "string", "description": "Issue key" },
+          "body": { "type": "string", "description": "Comment body" }
+        },
+        "required": ["issue_key", "body"]
+      }
+    },
+    {
+      "name": "jira_list_sprints",
+      "description": "List sprints for a Jira board",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "board_id": { "type": "string", "description": "Board ID" },
+          "state": { "type": "string", "enum": ["active", "closed", "future"], "description": "Sprint state filter" }
+        },
+        "required": ["board_id"]
+      }
+    }
+  ]
+}

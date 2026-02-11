@@ -1,0 +1,26 @@
+{
+  "tool": "notion_search_pages",
+  "server": "notion",
+  "description": "Mock Notion search response",
+  "default_response": {
+    "results": [
+      {
+        "id": "page-abc123",
+        "title": "Q3 Planning Document",
+        "type": "page",
+        "last_edited": "2026-02-08T10:30:00Z",
+        "url": "https://notion.so/Q3-Planning-abc123",
+        "created_by": "Alice Chen"
+      },
+      {
+        "id": "page-def456",
+        "title": "Q3 Goals & OKRs",
+        "type": "page",
+        "last_edited": "2026-02-05T14:20:00Z",
+        "url": "https://notion.so/Q3-Goals-def456",
+        "created_by": "Bob Smith"
+      }
+    ],
+    "total_results": 2
+  }
+}

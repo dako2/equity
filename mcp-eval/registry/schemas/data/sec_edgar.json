@@ -1,0 +1,95 @@
+{
+  "server": "sec_edgar",
+  "domain": "data",
+  "description": "SEC EDGAR filings and financial data — company filings, financial statements, and regulatory submissions",
+  "tools": [
+    {
+      "name": "sec_get_company_info",
+      "description": "Get basic company information from SEC EDGAR (CIK, name, fiscal year end)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol (e.g., AAPL, MSFT)" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_get_filings",
+      "description": "Get list of SEC filings (10-K, 10-Q, 8-K) for a company",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "form_type": { "type": "string", "enum": ["10-K", "10-Q", "8-K", "S-1", "DEF 14A"], "description": "Filing type filter" },
+          "limit": { "type": "integer", "default": 5, "description": "Number of filings to return" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_get_financial_statements",
+      "description": "Get all three main financial statements (Income Statement, Balance Sheet, Cash Flow) from 10-K or 10-Q filings",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "form_type": { "type": "string", "enum": ["10-K", "10-Q"], "default": "10-K" },
+          "num_periods": { "type": "integer", "default": 4, "description": "Number of periods to retrieve" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_get_income_statement",
+      "description": "Get income statement (revenues, expenses, net income) from SEC filings",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "form_type": { "type": "string", "enum": ["10-K", "10-Q"], "default": "10-K" },
+          "num_periods": { "type": "integer", "default": 4 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_get_balance_sheet",
+      "description": "Get balance sheet (assets, liabilities, equity) from SEC filings",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "form_type": { "type": "string", "enum": ["10-K", "10-Q"], "default": "10-K" },
+          "num_periods": { "type": "integer", "default": 4 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_get_cash_flow",
+      "description": "Get cash flow statement (operating, investing, financing) from SEC filings",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "form_type": { "type": "string", "enum": ["10-K", "10-Q"], "default": "10-K" },
+          "num_periods": { "type": "integer", "default": 4 }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "sec_compare_companies",
+      "description": "Compare a financial metric across multiple companies using SEC data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tickers": { "type": "array", "items": { "type": "string" }, "description": "List of ticker symbols to compare" },
+          "metric": { "type": "string", "description": "Metric to compare (e.g., NetIncome, Revenues, TotalAssets)", "default": "NetIncome" }
+        },
+        "required": ["tickers"]
+      }
+    }
+  ]
+}

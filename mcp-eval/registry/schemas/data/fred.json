@@ -1,0 +1,55 @@
+{
+  "server": "fred",
+  "domain": "data",
+  "description": "Federal Reserve Economic Data (FRED) — macroeconomic indicators, interest rates, employment, inflation, and GDP data",
+  "tools": [
+    {
+      "name": "fred_get_series",
+      "description": "Get time series data for a FRED economic indicator",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "series_id": { "type": "string", "description": "FRED series ID (e.g., GDP, UNRATE, CPIAUCSL, FEDFUNDS)" },
+          "start_date": { "type": "string", "description": "Start date (YYYY-MM-DD)" },
+          "end_date": { "type": "string", "description": "End date (YYYY-MM-DD)" },
+          "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "quarterly", "annual"], "description": "Data frequency" }
+        },
+        "required": ["series_id"]
+      }
+    },
+    {
+      "name": "fred_search_series",
+      "description": "Search for FRED economic data series by keyword",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query (e.g., 'unemployment rate', 'consumer price index')" },
+          "limit": { "type": "integer", "description": "Number of results", "default": 20 }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "fred_get_latest_value",
+      "description": "Get the most recent value for a FRED economic indicator",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "series_id": { "type": "string", "description": "FRED series ID" }
+        },
+        "required": ["series_id"]
+      }
+    },
+    {
+      "name": "fred_get_category",
+      "description": "Browse FRED data categories and their child series",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category_id": { "type": "integer", "description": "FRED category ID (e.g., 32991 for Money, Banking, & Finance)", "default": 0 }
+        },
+        "required": []
+      }
+    }
+  ]
+}

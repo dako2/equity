@@ -1,0 +1,35 @@
+{
+  "tool": "sec_get_income_statement",
+  "server": "sec_edgar",
+  "description": "Mock income statement response",
+  "default_response": {
+    "ticker": "AAPL",
+    "form_type": "10-K",
+    "periods": [
+      {
+        "period": "FY2024",
+        "end_date": "2024-09-28",
+        "revenues": 391035000000,
+        "cost_of_revenue": 214137000000,
+        "gross_profit": 176898000000,
+        "operating_expenses": 58414000000,
+        "operating_income": 118484000000,
+        "net_income": 93736000000,
+        "eps_basic": 6.13,
+        "eps_diluted": 6.08
+      },
+      {
+        "period": "FY2023",
+        "end_date": "2023-09-30",
+        "revenues": 383285000000,
+        "cost_of_revenue": 214137000000,
+        "gross_profit": 169148000000,
+        "operating_expenses": 54847000000,
+        "operating_income": 114301000000,
+        "net_income": 96995000000,
+        "eps_basic": 6.16,
+        "eps_diluted": 6.13
+      }
+    ]
+  }
+}

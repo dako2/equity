@@ -1,0 +1,67 @@
+{
+  "server": "yahoo_finance",
+  "domain": "data",
+  "description": "Yahoo Finance market data — stock quotes, financials, analyst ratings, options, and portfolio tracking",
+  "tools": [
+    {
+      "name": "yf_get_stock_info",
+      "description": "Get comprehensive stock information from Yahoo Finance including price, market cap, sector, and key statistics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "yf_get_historical_prices",
+      "description": "Get historical OHLCV price data from Yahoo Finance",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "period": { "type": "string", "enum": ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "max"], "description": "Time period" },
+          "interval": { "type": "string", "enum": ["1m", "5m", "15m", "1h", "1d", "1wk", "1mo"], "description": "Data interval", "default": "1d" }
+        },
+        "required": ["ticker", "period"]
+      }
+    },
+    {
+      "name": "yf_get_analyst_recommendations",
+      "description": "Get analyst recommendations and price targets from Yahoo Finance",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "yf_get_options_chain",
+      "description": "Get options chain data (calls and puts) for a stock",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "expiration_date": { "type": "string", "description": "Options expiration date (YYYY-MM-DD)" }
+        },
+        "required": ["ticker"]
+      }
+    },
+    {
+      "name": "yf_get_financials",
+      "description": "Get financial statements (income, balance sheet, cash flow) from Yahoo Finance",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": { "type": "string", "description": "Stock ticker symbol" },
+          "statement": { "type": "string", "enum": ["income", "balance_sheet", "cash_flow"], "description": "Financial statement type" },
+          "frequency": { "type": "string", "enum": ["annual", "quarterly"], "description": "Reporting frequency", "default": "annual" }
+        },
+        "required": ["ticker", "statement"]
+      }
+    }
+  ]
+}
