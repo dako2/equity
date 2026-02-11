@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Inc - Q1 FY26 Update</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a2e;
+            --border: #2a2a3e;
+            --text: #e4e4eb;
+            --text-dim: #8888a0;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --blue: #3b82f6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .header-left h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ticker {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+        
+        .rating {
+            display: inline-block;
+            background: var(--green);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .header-right {
+            text-align: right;
+        }
+        
+        .price-target {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+        
+        .upside {
+            color: var(--green);
+            font-size: 1.1rem;
+        }
+        
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .stat-value.observed { color: var(--blue); }
+        .stat-value.assumed { color: var(--yellow); }
+        .stat-value.derived { color: var(--accent); }
+        
+        /* Tables */
+        .table-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.2rem;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: var(--bg-hover);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th:not(:first-child) {
+            text-align: right;
+        }
+        
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        
+        td:not(:first-child) {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: var(--bg-hover);
+        }
+        
+        /* Data cells with source */
+        .data-cell {
+            position: relative;
+            cursor: help;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        
+        .data-cell:hover {
+            background: var(--accent-glow);
+        }
+        
+        .data-cell.observed {
+            border-left: 2px solid var(--blue);
+        }
+        
+        .data-cell.assumed {
+            border-left: 2px solid var(--yellow);
+        }
+        
+        .data-cell.derived {
+            border-left: 2px solid var(--accent);
+            font-style: italic;
+        }
+        
+        .data-cell.projection {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            z-index: 1000;
+            background: #1e1e2e;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            min-width: 320px;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        
+        .tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tooltip-id {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--accent);
+        }
+        
+        .tooltip-nature {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .tooltip-nature.observed {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--blue);
+        }
+        
+        .tooltip-nature.assumed {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--yellow);
+        }
+        
+        .tooltip-nature.derived {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+        }
+        
+        .tooltip-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .tooltip-label {
+            color: var(--text-dim);
+            min-width: 80px;
+        }
+        
+        .tooltip-value {
+            color: var(--text);
+            flex: 1;
+        }
+        
+        .tooltip-value a {
+            color: var(--blue);
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .tooltip-value a:hover {
+            text-decoration: underline;
+        }
+        
+        .tooltip-formula {
+            background: var(--bg-dark);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+        
+        .tooltip-scenarios {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .scenario {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .scenario.bull {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .scenario.bear {
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .scenario-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        
+        .scenario-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .scenario.bull .scenario-value { color: var(--green); }
+        .scenario.bear .scenario-value { color: var(--red); }
+        
+        .tooltip-deps {
+            margin-top: 0.5rem;
+        }
+        
+        .dep-item {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            padding: 0.2rem 0;
+        }
+        
+        .dep-item::before {
+            content: '← ';
+            color: var(--accent);
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        .legend-color.observed { background: var(--blue); }
+        .legend-color.assumed { background: var(--yellow); }
+        .legend-color.derived { background: var(--accent); }
+        
+        /* Row styles */
+        .row-header td {
+            font-weight: 600;
+            background: var(--bg-hover);
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .row-subtotal td {
+            font-weight: 600;
+            border-top: 1px solid var(--border);
+        }
+        
+        .row-total td {
+            font-weight: 700;
+            background: var(--bg-hover);
+            border-top: 2px solid var(--border);
+        }
+        
+        .row-highlight td {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Footer */
+        .table-footer {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        /* Grid layout for tables */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .tables-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>Apple Inc</h1>
+                <span class="ticker">AAPL</span>
+                <span class="rating">Overweight</span>
+            </div>
+            <div class="header-right">
+                <div class="price-target">$250.00</div>
+                <div class="upside">▲ 9.9% upside</div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-label">Data Points</span>
+                <span class="stat-value">106</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Observed (Historical)</span>
+                <span class="stat-value observed">62</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Assumed (Inputs)</span>
+                <span class="stat-value assumed">8</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Derived (Projections)</span>
+                <span class="stat-value derived">36</span>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color observed"></div>
+                <span>Observed (SEC filings, market data)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color assumed"></div>
+                <span>Assumed (analyst inputs)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color derived"></div>
+                <span>Derived (calculated projections)</span>
+            </div>
+            <span style="margin-left: auto; color: var(--text-dim);">Hover any value to see source →</span>
+        </div>
+        
+        <!-- Tables -->
+        <div class="tables-grid">
+            
+        <div class="table-section full-width">
+            <div class="table-title">Income Statement</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">($M)</th>
+                        <th>FY24</th>
+                        <th>FY25</th>
+                        <th>FY26E</th>
+                        <th>YoY %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Revenue</td>
+                        <td><span class="data-cell observed " data-ref="revenue.fy24">391035</span></td>
+                        <td><span class="data-cell observed " data-ref="revenue.fy25">410587</span></td>
+                        <td><span class="data-cell derived projection" data-ref="revenue.fy26e">443434</span></td>
+                        <td>8.0%</td>
+                    </tr>
+                    <tr>
+                        <td>Cost of Revenue</td>
+                        <td><span class="data-cell observed " data-ref="cost_of_revenue.fy24">210352</span></td>
+                        <td><span class="data-cell observed " data-ref="cost_of_revenue.fy25">218510</span></td>
+                        <td><span class="data-cell derived projection" data-ref="cost_of_revenue.fy26e">237237</span></td>
+                        <td>8.6%</td>
+                    </tr>
+                    <tr class="row-subtotal">
+                        <td>Gross Profit</td>
+                        <td><span class="data-cell observed " data-ref="gross_profit.fy24">180683</span></td>
+                        <td><span class="data-cell observed " data-ref="gross_profit.fy25">192077</span></td>
+                        <td><span class="data-cell derived projection" data-ref="gross_profit.fy26e">206197</span></td>
+                        <td>7.4%</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--text-dim);">Gross Margin</td>
+                        <td style="color: var(--text-dim);">46.2%</td>
+                        <td style="color: var(--text-dim);">46.8%</td>
+                        <td style="color: var(--text-dim);">46.5%</td>
+                        <td style="color: var(--text-dim);">-30bps</td>
+                    </tr>
+                    <tr>
+                        <td>R&D Expense</td>
+                        <td><span class="data-cell observed " data-ref="rd_expense.fy24">31370</span></td>
+                        <td><span class="data-cell observed " data-ref="rd_expense.fy25">33887</span></td>
+                        <td>$36,500</td>
+                        <td>7.7%</td>
+                    </tr>
+                    <tr>
+                        <td>SG&A Expense</td>
+                        <td><span class="data-cell observed " data-ref="sga_expense.fy24">26097</span></td>
+                        <td><span class="data-cell observed " data-ref="sga_expense.fy25">27150</span></td>
+                        <td>$23,364</td>
+                        <td>-14.0%</td>
+                    </tr>
+                    <tr class="row-subtotal">
+                        <td>Operating Income</td>
+                        <td><span class="data-cell observed " data-ref="operating_income.fy24">123216</span></td>
+                        <td><span class="data-cell observed " data-ref="operating_income.fy25">131040</span></td>
+                        <td><span class="data-cell derived projection" data-ref="operating_income.fy26e">146333</span></td>
+                        <td>11.7%</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--text-dim);">Operating Margin</td>
+                        <td style="color: var(--text-dim);">31.5%</td>
+                        <td style="color: var(--text-dim);">31.9%</td>
+                        <td style="color: var(--text-dim);">33.0%</td>
+                        <td style="color: var(--text-dim);">+110bps</td>
+                    </tr>
+                    <tr>
+                        <td>Pretax Income</td>
+                        <td><span class="data-cell observed " data-ref="pretax_income.fy24">126981</span></td>
+                        <td><span class="data-cell observed " data-ref="pretax_income.fy25">134240</span></td>
+                        <td><span class="data-cell derived projection" data-ref="pretax_income.fy26e">149333</span></td>
+                        <td>11.2%</td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>Net Income</td>
+                        <td><span class="data-cell observed " data-ref="net_income.fy24">107421</span></td>
+                        <td><span class="data-cell observed " data-ref="net_income.fy25">113433</span></td>
+                        <td><span class="data-cell derived projection" data-ref="net_income.fy26e">126186</span></td>
+                        <td>11.2%</td>
+                    </tr>
+                    <tr class="row-highlight">
+                        <td>EPS (Diluted)</td>
+                        <td><span class="data-cell observed " data-ref="eps_diluted.fy24">$7.00</span></td>
+                        <td><span class="data-cell observed " data-ref="eps_diluted.fy25">$7.52</span></td>
+                        <td><span class="data-cell derived projection" data-ref="eps_diluted.fy26e">$8.41</span></td>
+                        <td>11.8%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="table-footer">Source: Company SEC filings (10-K), Analyst estimates for FY26E</div>
+        </div>
+    
+            
+        <div class="table-section">
+            <div class="table-title">Valuation Summary</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 180px;"></th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Share Price</td>
+                        <td><span class="data-cell observed " data-ref="share_price">$227.50</span></td>
+                    </tr>
+                    <tr>
+                        <td>Shares Outstanding</td>
+                        <td><span class="data-cell observed " data-ref="shares_outstanding">15,005M</span></td>
+                    </tr>
+                    <tr>
+                        <td>Market Cap</td>
+                        <td><span class="data-cell derived " data-ref="market_cap">$3.41T</span></td>
+                    </tr>
+                    <tr>
+                        <td>Enterprise Value</td>
+                        <td><span class="data-cell derived " data-ref="enterprise_value">$3.44T</span></td>
+                    </tr>
+                    <tr class="row-header">
+                        <td colspan="2">MULTIPLES (FY25 / FY26E)</td>
+                    </tr>
+                    <tr>
+                        <td>P/E</td>
+                        <td><span class="data-cell derived " data-ref="pe_fy25">30.3x</span> / <span class="data-cell derived projection" data-ref="pe_fy26e">27.1x</span></td>
+                    </tr>
+                    <tr>
+                        <td>EV/EBITDA</td>
+                        <td><span class="data-cell derived " data-ref="ev_ebitda_fy25">24.0x</span> / <span class="data-cell derived projection" data-ref="ev_ebitda_fy26e">21.6x</span></td>
+                    </tr>
+                    <tr>
+                        <td>EV/Revenue</td>
+                        <td><span class="data-cell derived " data-ref="ev_revenue_fy25">8.4x</span> / <span class="data-cell derived projection" data-ref="ev_revenue_fy26e">7.8x</span></td>
+                    </tr>
+                    <tr>
+                        <td>FCF Yield</td>
+                        <td><span class="data-cell derived " data-ref="fcf_yield_fy25">3.4%</span> / <span class="data-cell derived projection" data-ref="fcf_yield_fy26e">3.7%</span></td>
+                    </tr>
+                    <tr class="row-header">
+                        <td colspan="2">DCF ASSUMPTIONS</td>
+                    </tr>
+                    <tr>
+                        <td>WACC</td>
+                        <td><span class="data-cell assumed " data-ref="wacc">9.2%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Terminal Growth</td>
+                        <td><span class="data-cell assumed " data-ref="terminal_growth">2.5%</span></td>
+                    </tr>
+                    <tr class="row-highlight">
+                        <td><strong>Price Target</strong></td>
+                        <td><strong><span class="data-cell derived " data-ref="price_target">$250.00</span></strong></td>
+                    </tr>
+                    <tr>
+                        <td>Upside</td>
+                        <td style="color: var(--green);"><span class="data-cell derived " data-ref="upside">+9.9%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Bull Case</td>
+                        <td style="color: var(--green);"><span class="data-cell derived " data-ref="dcf_value">$285.00</span></td>
+                    </tr>
+                    <tr>
+                        <td>Bear Case</td>
+                        <td style="color: var(--red);">$205.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    
+            
+        <div class="table-section">
+            <div class="table-title">Balance Sheet</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">($M)</th>
+                        <th>FY24</th>
+                        <th>FY25</th>
+                        <th>FY26E</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="row-header">
+                        <td colspan="4">ASSETS</td>
+                    </tr>
+                    <tr>
+                        <td>Cash & Equivalents</td>
+                        <td><span class="data-cell observed " data-ref="cash.fy24">29943</span></td>
+                        <td><span class="data-cell observed " data-ref="cash.fy25">32695</span></td>
+                        <td><span class="data-cell derived projection" data-ref="cash.fy26e">45000</span></td>
+                    </tr>
+                    <tr>
+                        <td>Short-term Inv.</td>
+                        <td><span class="data-cell observed " data-ref="short_term_inv.fy24">35228</span></td>
+                        <td><span class="data-cell observed " data-ref="short_term_inv.fy25">33500</span></td>
+                        <td>$35,000</td>
+                    </tr>
+                    <tr>
+                        <td>Accounts Receivable</td>
+                        <td><span class="data-cell observed " data-ref="accounts_receivable.fy24">33410</span></td>
+                        <td><span class="data-cell observed " data-ref="accounts_receivable.fy25">35187</span></td>
+                        <td>$38,000</td>
+                    </tr>
+                    <tr class="row-subtotal">
+                        <td>Total Current Assets</td>
+                        <td><span class="data-cell observed " data-ref="total_current_assets.fy24">143566</span></td>
+                        <td><span class="data-cell observed " data-ref="total_current_assets.fy25">148200</span></td>
+                        <td><span class="data-cell derived projection" data-ref="total_current_assets.fy26e">162500</span></td>
+                    </tr>
+                    <tr>
+                        <td>PP&E (Net)</td>
+                        <td><span class="data-cell observed " data-ref="ppe_net.fy24">45680</span></td>
+                        <td><span class="data-cell observed " data-ref="ppe_net.fy25">47520</span></td>
+                        <td><span class="data-cell derived projection" data-ref="ppe_net.fy26e">50150</span></td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>Total Assets</td>
+                        <td><span class="data-cell observed " data-ref="total_assets.fy24">364980</span></td>
+                        <td><span class="data-cell observed " data-ref="total_assets.fy25">375420</span></td>
+                        <td><span class="data-cell derived projection" data-ref="total_assets.fy26e">392800</span></td>
+                    </tr>
+                    <tr class="row-header">
+                        <td colspan="4">LIABILITIES & EQUITY</td>
+                    </tr>
+                    <tr>
+                        <td>Long-term Debt</td>
+                        <td><span class="data-cell observed " data-ref="long_term_debt.fy24">85750</span></td>
+                        <td><span class="data-cell observed " data-ref="long_term_debt.fy25">78250</span></td>
+                        <td><span class="data-cell derived projection" data-ref="long_term_debt.fy26e">72000</span></td>
+                    </tr>
+                    <tr class="row-subtotal">
+                        <td>Total Liabilities</td>
+                        <td><span class="data-cell observed " data-ref="total_liabilities.fy24">290437</span></td>
+                        <td><span class="data-cell observed " data-ref="total_liabilities.fy25">285650</span></td>
+                        <td><span class="data-cell derived projection" data-ref="total_liabilities.fy26e">278500</span></td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>Total Equity</td>
+                        <td><span class="data-cell observed " data-ref="total_equity.fy24">74543</span></td>
+                        <td><span class="data-cell observed " data-ref="total_equity.fy25">89770</span></td>
+                        <td><span class="data-cell derived projection" data-ref="total_equity.fy26e">114300</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="table-footer">Source: SEC 10-K filings</div>
+        </div>
+    
+            
+        <div class="table-section">
+            <div class="table-title">Cash Flow Statement</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">($M)</th>
+                        <th>FY24</th>
+                        <th>FY25</th>
+                        <th>FY26E</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cash from Operations</td>
+                        <td><span class="data-cell observed " data-ref="cfo.fy24">118254</span></td>
+                        <td><span class="data-cell observed " data-ref="cfo.fy25">125600</span></td>
+                        <td><span class="data-cell derived projection" data-ref="cfo.fy26e">138500</span></td>
+                    </tr>
+                    <tr>
+                        <td>Capital Expenditures</td>
+                        <td><span class="data-cell observed " data-ref="capex.fy24">-9447</span></td>
+                        <td><span class="data-cell observed " data-ref="capex.fy25">-10250</span></td>
+                        <td><span class="data-cell derived projection" data-ref="capex.fy26e">-12416</span></td>
+                    </tr>
+                    <tr class="row-highlight">
+                        <td>Free Cash Flow</td>
+                        <td><span class="data-cell observed " data-ref="fcf.fy24">108807</span></td>
+                        <td><span class="data-cell observed " data-ref="fcf.fy25">115350</span></td>
+                        <td><span class="data-cell derived projection" data-ref="fcf.fy26e">126084</span></td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--text-dim);">FCF Margin</td>
+                        <td style="color: var(--text-dim);">27.8%</td>
+                        <td style="color: var(--text-dim);">28.1%</td>
+                        <td style="color: var(--text-dim);">28.4%</td>
+                    </tr>
+                    <tr>
+                        <td>Depreciation</td>
+                        <td><span class="data-cell observed " data-ref="depreciation.fy24">11519</span></td>
+                        <td><span class="data-cell observed " data-ref="depreciation.fy25">12100</span></td>
+                        <td><span class="data-cell derived projection" data-ref="depreciation.fy26e">12700</span></td>
+                    </tr>
+                    <tr>
+                        <td>Dividends Paid</td>
+                        <td><span class="data-cell observed " data-ref="dividends.fy24">-15025</span></td>
+                        <td><span class="data-cell observed " data-ref="dividends.fy25">-15400</span></td>
+                        <td><span class="data-cell derived projection" data-ref="dividends.fy26e">-16016</span></td>
+                    </tr>
+                    <tr>
+                        <td>Share Buybacks</td>
+                        <td><span class="data-cell observed " data-ref="buybacks.fy24">-95000</span></td>
+                        <td><span class="data-cell observed " data-ref="buybacks.fy25">-90000</span></td>
+                        <td><span class="data-cell derived projection" data-ref="buybacks.fy26e">-95000</span></td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>Total Capital Return</td>
+                        <td>($110,025)</td>
+                        <td>($105,400)</td>
+                        <td>($111,016)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="table-footer">Source: SEC 10-K filings</div>
+        </div>
+    
+        </div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        // Data store
+        const DATA = {"revenue_growth.fy26": {"id": "revenue_growth.fy26", "value": 0.08, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "iPhone 17 cycle + Vision Pro ramp + Services growth"}, "alternatives": {"bull": 0.12, "bear": 0.04}}, "gross_margin.fy26": {"id": "gross_margin.fy26", "value": 0.465, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Slight expansion from Services mix shift"}, "alternatives": {"bull": 0.475, "bear": 0.45}}, "opex_pct_rev.fy26": {"id": "opex_pct_rev.fy26", "value": 0.135, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Continued R&D investment in AI/Vision"}, "alternatives": {"bull": 0.13, "bear": 0.14}}, "tax_rate.fy26": {"id": "tax_rate.fy26", "value": 0.155, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Stable effective tax rate"}, "alternatives": {}}, "capex_pct_rev.fy26": {"id": "capex_pct_rev.fy26", "value": 0.028, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Infrastructure for AI and services"}, "alternatives": {}}, "dividend_growth.fy26": {"id": "dividend_growth.fy26", "value": 0.04, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Continued modest dividend increases"}, "alternatives": {}}, "revenue.fy24": {"id": "revenue.fy24", "value": 391035, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["revenue", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "cost_of_revenue.fy24": {"id": "cost_of_revenue.fy24", "value": 210352, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cost_of_revenue", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "gross_profit.fy24": {"id": "gross_profit.fy24", "value": 180683, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["gross_profit", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "rd_expense.fy24": {"id": "rd_expense.fy24", "value": 31370, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["rd_expense", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "sga_expense.fy24": {"id": "sga_expense.fy24", "value": 26097, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["sga_expense", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "operating_income.fy24": {"id": "operating_income.fy24", "value": 123216, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["operating_income", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "interest_income.fy24": {"id": "interest_income.fy24", "value": 3765, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["interest_income", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "pretax_income.fy24": {"id": "pretax_income.fy24", "value": 126981, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["pretax_income", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "income_tax.fy24": {"id": "income_tax.fy24", "value": 19560, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["income_tax", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "net_income.fy24": {"id": "net_income.fy24", "value": 107421, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["net_income", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "eps_diluted.fy24": {"id": "eps_diluted.fy24", "value": 7.0, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["eps_diluted", "fy2024"], "meta": {"unit": "$"}, "alternatives": {}}, "revenue.fy25": {"id": "revenue.fy25", "value": 410587, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["revenue", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "cost_of_revenue.fy25": {"id": "cost_of_revenue.fy25", "value": 218510, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cost_of_revenue", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "gross_profit.fy25": {"id": "gross_profit.fy25", "value": 192077, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["gross_profit", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "rd_expense.fy25": {"id": "rd_expense.fy25", "value": 33887, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["rd_expense", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "sga_expense.fy25": {"id": "sga_expense.fy25", "value": 27150, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["sga_expense", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "operating_income.fy25": {"id": "operating_income.fy25", "value": 131040, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["operating_income", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "interest_income.fy25": {"id": "interest_income.fy25", "value": 3200, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["interest_income", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "pretax_income.fy25": {"id": "pretax_income.fy25", "value": 134240, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["pretax_income", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "income_tax.fy25": {"id": "income_tax.fy25", "value": 20807, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["income_tax", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "net_income.fy25": {"id": "net_income.fy25", "value": 113433, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["net_income", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "eps_diluted.fy25": {"id": "eps_diluted.fy25", "value": 7.52, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["eps_diluted", "fy2025"], "meta": {"unit": "$"}, "alternatives": {}}, "revenue.fy26e": {"id": "revenue.fy26e", "value": 443434, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["revenue.fy25", "revenue_growth.fy26"], "formula": "revenue.fy25 * (1 + revenue_growth.fy26)", "tags": ["revenue", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 459857, "bear": 427011}}, "gross_profit.fy26e": {"id": "gross_profit.fy26e", "value": 206197, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["revenue.fy26e", "gross_margin.fy26"], "formula": "revenue.fy26e * gross_margin.fy26", "tags": ["gross_profit", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 218432, "bear": 192155}}, "cost_of_revenue.fy26e": {"id": "cost_of_revenue.fy26e", "value": 237237, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["revenue.fy26e", "gross_profit.fy26e"], "formula": "revenue.fy26e - gross_profit.fy26e", "tags": ["cost_of_revenue", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "opex.fy26e": {"id": "opex.fy26e", "value": 59864, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["revenue.fy26e", "opex_pct_rev.fy26"], "formula": "revenue.fy26e * opex_pct_rev.fy26", "tags": ["opex", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "operating_income.fy26e": {"id": "operating_income.fy26e", "value": 146333, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["gross_profit.fy26e", "opex.fy26e"], "formula": "gross_profit.fy26e - opex.fy26e", "tags": ["operating_income", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 158645, "bear": 132623}}, "pretax_income.fy26e": {"id": "pretax_income.fy26e", "value": 149333, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["operating_income.fy26e"], "formula": "operating_income.fy26e + interest_income (est 3000)", "tags": ["pretax_income", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "income_tax.fy26e": {"id": "income_tax.fy26e", "value": 23147, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["pretax_income.fy26e", "tax_rate.fy26"], "formula": "pretax_income.fy26e * tax_rate.fy26", "tags": ["income_tax", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "net_income.fy26e": {"id": "net_income.fy26e", "value": 126186, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["pretax_income.fy26e", "income_tax.fy26e"], "formula": "pretax_income.fy26e - income_tax.fy26e", "tags": ["net_income", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 138500, "bear": 112000}}, "eps_diluted.fy26e": {"id": "eps_diluted.fy26e", "value": 8.41, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["net_income.fy26e"], "formula": "net_income.fy26e / diluted_shares", "tags": ["eps_diluted", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 9.23, "bear": 7.47}}, "cash.fy24": {"id": "cash.fy24", "value": 29943, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cash", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "short_term_inv.fy24": {"id": "short_term_inv.fy24", "value": 35228, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["short_term_inv", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "accounts_receivable.fy24": {"id": "accounts_receivable.fy24", "value": 33410, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["accounts_receivable", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "inventory.fy24": {"id": "inventory.fy24", "value": 7286, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["inventory", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_current_assets.fy24": {"id": "total_current_assets.fy24", "value": 143566, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_current_assets", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "ppe_net.fy24": {"id": "ppe_net.fy24", "value": 45680, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["ppe_net", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_assets.fy24": {"id": "total_assets.fy24", "value": 364980, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_assets", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "accounts_payable.fy24": {"id": "accounts_payable.fy24", "value": 68960, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["accounts_payable", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "short_term_debt.fy24": {"id": "short_term_debt.fy24", "value": 20868, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["short_term_debt", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_current_liabilities.fy24": {"id": "total_current_liabilities.fy24", "value": 145308, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_current_liabilities", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "long_term_debt.fy24": {"id": "long_term_debt.fy24", "value": 85750, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["long_term_debt", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_liabilities.fy24": {"id": "total_liabilities.fy24", "value": 290437, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_liabilities", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_equity.fy24": {"id": "total_equity.fy24", "value": 74543, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_equity", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "cash.fy25": {"id": "cash.fy25", "value": 32695, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cash", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "short_term_inv.fy25": {"id": "short_term_inv.fy25", "value": 33500, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["short_term_inv", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "accounts_receivable.fy25": {"id": "accounts_receivable.fy25", "value": 35187, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["accounts_receivable", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "inventory.fy25": {"id": "inventory.fy25", "value": 7650, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["inventory", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_current_assets.fy25": {"id": "total_current_assets.fy25", "value": 148200, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_current_assets", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "ppe_net.fy25": {"id": "ppe_net.fy25", "value": 47520, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["ppe_net", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_assets.fy25": {"id": "total_assets.fy25", "value": 375420, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_assets", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "accounts_payable.fy25": {"id": "accounts_payable.fy25", "value": 72450, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["accounts_payable", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "short_term_debt.fy25": {"id": "short_term_debt.fy25", "value": 18500, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["short_term_debt", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_current_liabilities.fy25": {"id": "total_current_liabilities.fy25", "value": 150200, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_current_liabilities", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "long_term_debt.fy25": {"id": "long_term_debt.fy25", "value": 78250, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["long_term_debt", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_liabilities.fy25": {"id": "total_liabilities.fy25", "value": 285650, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_liabilities", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_equity.fy25": {"id": "total_equity.fy25", "value": 89770, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["total_equity", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "cash.fy26e": {"id": "cash.fy26e", "value": 45000, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["net_income.fy26e", "capex.fy26e", "dividends.fy26e"], "formula": "cash.fy25 + FCF - buybacks", "tags": ["cash", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_current_assets.fy26e": {"id": "total_current_assets.fy26e", "value": 162500, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["cash.fy26e", "revenue.fy26e"], "formula": "Scaled with revenue growth", "tags": ["total_current_assets", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "ppe_net.fy26e": {"id": "ppe_net.fy26e", "value": 50150, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["capex.fy26e"], "formula": "ppe.fy25 + capex - depreciation", "tags": ["ppe_net", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_assets.fy26e": {"id": "total_assets.fy26e", "value": 392800, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["total_current_assets.fy26e", "ppe_net.fy26e"], "formula": "Sum of asset categories", "tags": ["total_assets", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "long_term_debt.fy26e": {"id": "long_term_debt.fy26e", "value": 72000, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": [], "formula": "Continued debt paydown", "tags": ["long_term_debt", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_liabilities.fy26e": {"id": "total_liabilities.fy26e", "value": 278500, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": [], "formula": "Modest liability reduction", "tags": ["total_liabilities", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "total_equity.fy26e": {"id": "total_equity.fy26e", "value": 114300, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["net_income.fy26e", "dividends.fy26e"], "formula": "equity.fy25 + net_income - dividends - buybacks", "tags": ["total_equity", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "cfo.fy24": {"id": "cfo.fy24", "value": 118254, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cfo", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "capex.fy24": {"id": "capex.fy24", "value": -9447, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["capex", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "fcf.fy24": {"id": "fcf.fy24", "value": 108807, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["fcf", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "dividends.fy24": {"id": "dividends.fy24", "value": -15025, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["dividends", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "buybacks.fy24": {"id": "buybacks.fy24", "value": -95000, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["buybacks", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "depreciation.fy24": {"id": "depreciation.fy24", "value": 11519, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2024-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["depreciation", "fy2024"], "meta": {"unit": "$M"}, "alternatives": {}}, "cfo.fy25": {"id": "cfo.fy25", "value": 125600, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["cfo", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "capex.fy25": {"id": "capex.fy25", "value": -10250, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["capex", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "fcf.fy25": {"id": "fcf.fy25", "value": 115350, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["fcf", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "dividends.fy25": {"id": "dividends.fy25", "value": -15400, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["dividends", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "buybacks.fy25": {"id": "buybacks.fy25", "value": -90000, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["buybacks", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "depreciation.fy25": {"id": "depreciation.fy25", "value": 12100, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": "2025-09-30T00:00:00", "derived_from": [], "formula": null, "tags": ["depreciation", "fy2025"], "meta": {"unit": "$M"}, "alternatives": {}}, "cfo.fy26e": {"id": "cfo.fy26e", "value": 138500, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["net_income.fy26e", "depreciation.fy26e"], "formula": "net_income + D&A + working capital changes", "tags": ["cfo", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 152000, "bear": 124000}}, "capex.fy26e": {"id": "capex.fy26e", "value": -12416, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["revenue.fy26e", "capex_pct_rev.fy26"], "formula": "revenue.fy26e * capex_pct_rev.fy26", "tags": ["capex", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "fcf.fy26e": {"id": "fcf.fy26e", "value": 126084, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["cfo.fy26e", "capex.fy26e"], "formula": "cfo.fy26e + capex.fy26e", "tags": ["fcf", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 139500, "bear": 111600}}, "dividends.fy26e": {"id": "dividends.fy26e", "value": -16016, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["dividends.fy25", "dividend_growth.fy26"], "formula": "dividends.fy25 * (1 + dividend_growth.fy26)", "tags": ["dividends", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "buybacks.fy26e": {"id": "buybacks.fy26e", "value": -95000, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["fcf.fy26e", "dividends.fy26e"], "formula": "Continued buyback program", "tags": ["buybacks", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "depreciation.fy26e": {"id": "depreciation.fy26e", "value": 12700, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["ppe_net.fy26e"], "formula": "~12% of PPE", "tags": ["depreciation", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "share_price": {"id": "share_price", "value": 227.5, "nature": "observed", "source": "market", "source_ref": "https://finance.yahoo.com/quote/AAPL", "as_of": "2026-01-31T00:00:00", "derived_from": [], "formula": null, "tags": [], "meta": {"unit": "$"}, "alternatives": {}}, "shares_outstanding": {"id": "shares_outstanding", "value": 15005, "nature": "observed", "source": "sec:10-K", "source_ref": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K", "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"unit": "M shares"}, "alternatives": {}}, "market_cap": {"id": "market_cap", "value": 3413637, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["share_price", "shares_outstanding"], "formula": "share_price * shares_outstanding", "tags": ["market_cap", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "net_debt": {"id": "net_debt", "value": 28555, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["long_term_debt.fy25", "cash.fy25"], "formula": "total_debt - cash - investments", "tags": ["net_debt", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "enterprise_value": {"id": "enterprise_value", "value": 3442192, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["market_cap", "net_debt"], "formula": "market_cap + net_debt", "tags": ["enterprise_value", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "pe_fy25": {"id": "pe_fy25", "value": 30.3, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["share_price", "eps_diluted.fy25"], "formula": "share_price / eps_diluted.fy25", "tags": ["pe_fy25", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "ev_ebitda_fy25": {"id": "ev_ebitda_fy25", "value": 24.0, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["enterprise_value", "operating_income.fy25", "depreciation.fy25"], "formula": "EV / (operating_income + depreciation)", "tags": ["ev_ebitda_fy25", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "ev_revenue_fy25": {"id": "ev_revenue_fy25", "value": 8.4, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["enterprise_value", "revenue.fy25"], "formula": "EV / revenue", "tags": ["ev_revenue_fy25", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "fcf_yield_fy25": {"id": "fcf_yield_fy25", "value": 0.034, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["fcf.fy25", "market_cap"], "formula": "FCF / market_cap", "tags": ["fcf_yield_fy25", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "pe_fy26e": {"id": "pe_fy26e", "value": 27.1, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["share_price", "eps_diluted.fy26e"], "formula": "share_price / eps_diluted.fy26e", "tags": ["pe_fy26e", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "ev_ebitda_fy26e": {"id": "ev_ebitda_fy26e", "value": 21.6, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["enterprise_value", "operating_income.fy26e", "depreciation.fy26e"], "formula": "EV / (operating_income.fy26e + depreciation.fy26e)", "tags": ["ev_ebitda_fy26e", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "ev_revenue_fy26e": {"id": "ev_revenue_fy26e", "value": 7.8, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["enterprise_value", "revenue.fy26e"], "formula": "EV / revenue.fy26e", "tags": ["ev_revenue_fy26e", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "fcf_yield_fy26e": {"id": "fcf_yield_fy26e", "value": 0.037, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["fcf.fy26e", "market_cap"], "formula": "FCF.fy26e / market_cap", "tags": ["fcf_yield_fy26e", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}, "wacc": {"id": "wacc", "value": 0.092, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Risk-free 4.2% + beta 1.1 * ERP 5%"}, "alternatives": {}}, "terminal_growth": {"id": "terminal_growth", "value": 0.025, "nature": "assumed", "source": "analyst", "source_ref": null, "as_of": null, "derived_from": [], "formula": null, "tags": [], "meta": {"rationale": "Long-term GDP + inflation"}, "alternatives": {}}, "dcf_value": {"id": "dcf_value", "value": 248.0, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["fcf.fy26e", "wacc", "terminal_growth"], "formula": "DCF model output", "tags": ["dcf_value", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 285.0, "bear": 205.0}}, "price_target": {"id": "price_target", "value": 250.0, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["dcf_value"], "formula": "Rounded DCF value", "tags": ["price_target", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {"bull": 285.0, "bear": 205.0}}, "upside": {"id": "upside", "value": 0.099, "nature": "derived", "source": null, "source_ref": null, "as_of": null, "derived_from": ["price_target", "share_price"], "formula": "(price_target - share_price) / share_price", "tags": ["upside", "fy2026e", "projection"], "meta": {"unit": "$M"}, "alternatives": {}}};
+        
+        // Tooltip element
+        const tooltip = document.getElementById('tooltip');
+        
+        // Format value for display
+        function formatValue(value, dp) {
+            if (typeof value === 'number') {
+                if (Math.abs(value) >= 1000) {
+                    return '$' + value.toLocaleString('en-US', {maximumFractionDigits: 0});
+                } else if (Math.abs(value) < 1) {
+                    return (value * 100).toFixed(1) + '%';
+                } else {
+                    return value.toFixed(2);
+                }
+            }
+            return value;
+        }
+        
+        // Generate source URL display
+        function getSourceDisplay(dp) {
+            if (!dp.source) return 'Unknown';
+            
+            const sourceMap = {
+                'sec:10-K': 'SEC 10-K Annual Report',
+                'sec:10-Q': 'SEC 10-Q Quarterly Report',
+                'market': 'Market Data',
+                'analyst': 'Analyst Estimate',
+            };
+            
+            let display = sourceMap[dp.source] || dp.source;
+            
+            if (dp.source_ref) {
+                display = `<a href="${dp.source_ref}" target="_blank">${display} ↗</a>`;
+            }
+            
+            return display;
+        }
+        
+        // Show tooltip
+        function showTooltip(event, dataId) {
+            const dp = DATA[dataId];
+            if (!dp) return;
+            
+            let html = `
+                <div class="tooltip-header">
+                    <span class="tooltip-id">${dp.id}</span>
+                    <span class="tooltip-nature ${dp.nature}">${dp.nature}</span>
+                </div>
+                <div class="tooltip-row">
+                    <span class="tooltip-label">Value</span>
+                    <span class="tooltip-value">${formatValue(dp.value, dp)}</span>
+                </div>
+            `;
+            
+            if (dp.as_of) {
+                html += `
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">As of</span>
+                        <span class="tooltip-value">${new Date(dp.as_of).toLocaleDateString()}</span>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="tooltip-row">
+                    <span class="tooltip-label">Source</span>
+                    <span class="tooltip-value">${getSourceDisplay(dp)}</span>
+                </div>
+            `;
+            
+            if (dp.meta && dp.meta.rationale) {
+                html += `
+                    <div class="tooltip-row">
+                        <span class="tooltip-label">Rationale</span>
+                        <span class="tooltip-value">${dp.meta.rationale}</span>
+                    </div>
+                `;
+            }
+            
+            if (dp.formula) {
+                html += `<div class="tooltip-formula">ƒ ${dp.formula}</div>`;
+            }
+            
+            if (dp.derived_from && dp.derived_from.length > 0) {
+                html += `<div class="tooltip-deps">`;
+                dp.derived_from.forEach(ref => {
+                    const parent = DATA[ref];
+                    if (parent) {
+                        html += `<div class="dep-item">${ref}: ${formatValue(parent.value)} (${parent.nature})</div>`;
+                    }
+                });
+                html += `</div>`;
+            }
+            
+            if (dp.alternatives && (dp.alternatives.bull || dp.alternatives.bear)) {
+                html += `
+                    <div class="tooltip-scenarios">
+                        <div class="scenario bull">
+                            <div class="scenario-label">Bull Case</div>
+                            <div class="scenario-value">${dp.alternatives.bull ? formatValue(dp.alternatives.bull) : '—'}</div>
+                        </div>
+                        <div class="scenario bear">
+                            <div class="scenario-label">Bear Case</div>
+                            <div class="scenario-value">${dp.alternatives.bear ? formatValue(dp.alternatives.bear) : '—'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            tooltip.innerHTML = html;
+            
+            // Position tooltip
+            const rect = event.target.getBoundingClientRect();
+            let left = rect.right + 10;
+            let top = rect.top;
+            
+            // Adjust if would go off screen
+            if (left + 400 > window.innerWidth) {
+                left = rect.left - 340;
+            }
+            if (top + 300 > window.innerHeight) {
+                top = window.innerHeight - 320;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('visible');
+        }
+        
+        // Hide tooltip
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+        
+        // Attach event listeners
+        document.querySelectorAll('.data-cell').forEach(cell => {
+            cell.addEventListener('mouseenter', (e) => showTooltip(e, cell.dataset.ref));
+            cell.addEventListener('mouseleave', hideTooltip);
+        });
+    </script>
+</body>
+</html>
